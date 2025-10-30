@@ -1,0 +1,33 @@
+<div class="notes-container">
+  <h2>My Notes</h2>
+
+  <form (ngSubmit)="addOrUpdate()" #noteForm="ngForm">
+    <input
+      type="text"
+      placeholder="Enter Note Title"
+      [(ngModel)]="newTitle"
+      name="title"
+      required
+    />
+    <textarea
+      placeholder="Enter note content..."
+      [(ngModel)]="newContent"
+      name="content"
+    ></textarea>
+
+    <button type="submit" [disabled]="!noteForm.valid">
+      {{ editingNote ? 'Update Note' : 'Add Note' }}
+    </button>
+    <button type="button" *ngIf="editingNote" (click)="cancelEdit()">Cancel</button>
+  </form>
+
+  <div class="note" *ngFor="let note of notes">
+    <h3>{{ note.title }}</h3>
+    <p>{{ note.content }}</p>
+    <small>{{ note.createdAt | date:'short' }}</small>
+    <div class="actions">
+      <button (click)="edit(note)">Edit</button>
+      <button (click)="delete(note.id)">Delete</button>
+    </div>
+  </div>
+</div>
