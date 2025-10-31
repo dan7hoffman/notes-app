@@ -7,7 +7,7 @@ import { NotesComponent } from "./notes/notes.component";
   standalone: true,
   imports: [RouterOutlet, NotesComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   title = 'notes-app';
