@@ -1,38 +1,63 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+
 import { Note } from './note.model';
 
-/*
-This repository handles the direct interaction with localStorage
-for storing and retrieving notes.
-*/
-
-@Injectable({
-  providedIn: 'root'
-})
+/**
+ * Repository responsible for persisting notes to localStorage.
+ * This class is safe to call on the server because it checks
+ * the platform before accessing window/localStorage.
+ */
+@Injectable({ providedIn: 'root' })
 export class NotesRepository {
-
-// Key used for storing notes in localStorage
-  private storageKey = 'notes';
+  /** Key used for storing notes in localStorage. */
+  private readonly storageKey = 'notes';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
-  // Retrieve all notes from localStorage
-  getAll(): Note[] {
-    // Check if the code is running in a browser environment
-    if (isPlatformBrowser(this.platformId)) {
-        // Get the notes data from localStorage
-      const data = localStorage.getItem(this.storageKey);
-      // Parse and return the notes, or return an empty array if no data exists
-      return data ? JSON.parse(data) : [];
-    }
-    return [];
+  /** Convenience getter to determine if code is running in the browser. */
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
   }
-  // Save all notes to localStorage
+
+  /**
+   * Return all notes from localStorage.
+   * If parsing fails or data is missing, returns an empty array.
+   */
+  getAll(): Note[] {
+    if (!this.isBrowser) {
+      return [];
+    }
+
+    const raw = localStorage.getItem(this.storageKey);
+    if (raw === null) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      // corrupted data — reset to safe default
+      return [];
+    }
+  }
+
+  /**
+   * Save all notes to localStorage. This is a no-op on the server.
+   */
   saveAll(notes: Note[]): void {
-    if (isPlatformBrowser(this.platformId)) {
-        // Convert the notes array to a JSON string and store it in localStorage
-      localStorage.setItem(this.storageKey, JSON.stringify(notes));
+    if (!this.isBrowser) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(notes || []));
+    } catch (err) {
+      // localStorage may throw (quota exceeded, private mode, etc.).
+      // Log a warning but don't throw to keep the app resilient.
+      // eslint-disable-next-line no-console
+      console.warn('NotesRepository: failed to save notes to localStorage', err);
     }
   }
 }
