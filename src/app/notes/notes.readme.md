@@ -15,5 +15,10 @@ Key Features of this currently:
 
 Next Steps:
 - Add in a lastUpdated field in addition to createdDate so track when a note was last updated with edits.
+-- Done
 - Add in a softdelete instead of hard delete so that it will still display in the presentation layer but be visually distinct.
+-- Done
+- Investigate bloated component
+-- Moved substantial business/data logic from notes.component.ts to notes.service.ts
+-- Done
 - Add in a note count metric card that auto updates and this may be accomplished with RxJS interval/or signals.

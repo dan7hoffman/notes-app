@@ -1,5 +1,5 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Note } from './note.model';
+import { Note } from '../note.model';
 import { isPlatformBrowser } from '@angular/common';
 
 /**

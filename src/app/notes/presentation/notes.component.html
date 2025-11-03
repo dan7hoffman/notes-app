@@ -1,5 +1,6 @@
 <div class="notes-container">
   <h2>My Notes</h2>
+    <p>Number of Notes: {{ noteCount$ | async }}</p>
 
   <form (ngSubmit)="addOrUpdate()" #noteForm="ngForm">
     <input

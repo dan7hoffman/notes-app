@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { NotesService } from './notes.service';
-import { Note } from './note.model';
+import { NotesService } from '../service/notes.service';
+import { Note } from '../note.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
+import { NotesStateService } from '../service/notesState.service';
 @Component({
   selector: 'app-notes',
   imports: [CommonModule, FormsModule],
@@ -13,11 +13,15 @@ import { CommonModule } from '@angular/common';
 })
 export class NotesComponent implements OnInit {
   notes: Note[] = [];
+  noteCount$ = this.notesState.noteCount$;
   newTitle = '';
   newContent = '';
   editingNote: Note | null = null;
 
-  constructor(private notesService: NotesService) {}
+  constructor(
+    private notesService: NotesService,
+    private notesState: NotesStateService
+  ) {}
 
   ngOnInit(): void {
     this.loadNotes();

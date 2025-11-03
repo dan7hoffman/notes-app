@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { NotesRepository } from './notes.repository';
-import { Note } from './note.model';
-
+import { NotesRepository } from '../data/notes.repository';
+import { Note } from '../note.model';
+import { NotesStateService } from './notesState.service';
 /*
  This service acts as a bridge between the components and the NotesRepository,
  providing a simpler API for managing notes.
@@ -13,11 +13,16 @@ import { Note } from './note.model';
 export class NotesService {
 
   // Inject the NotesRepository to handle data storage
-  constructor(private repo: NotesRepository) {}
+  constructor(
+    private repo: NotesRepository,
+    private notesState: NotesStateService
+  ) {}
 
   // Retrieve all notes from repository
   getNotes(): Note[] {
-    return this.repo.getAll();
+    const notes = this.repo.getAll();
+    this.notesState.setNoteCount(notes.length);
+    return notes;
   }
 // Add a new note to the repository
   add(data: {title: string, content: string}): Note {
