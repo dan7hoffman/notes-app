@@ -29,21 +29,16 @@ export class NotesComponent implements OnInit {
 
   addOrUpdate(): void {
     if (this.editingNote) {
-      const updatedNote: Note = {
-        ...this.editingNote,
+      this.notesService.update(this.editingNote.id, {
         title: this.newTitle,
         content: this.newContent
-      };
-      this.notesService.update(updatedNote);
+      });
       this.editingNote = null;
     } else {
-      const newNote: Note = {
-        id: Date.now(),
+      this.notesService.add({
         title: this.newTitle,
         content: this.newContent,
-        createdAt: new Date()
-      };
-      this.notesService.add(newNote);
+      });
     }
 
     this.newTitle = '';
@@ -57,9 +52,18 @@ export class NotesComponent implements OnInit {
     this.newContent = note.content;
   }
 
-  delete(id: number): void {
+  //This is a hard delete
+  hardDelete(id: number): void {
     this.notesService.delete(id);
     this.loadNotes();
+  }
+
+  //This is a soft delete via flagging update
+  softDelete(id: number): void {
+      const note = this.notes.find(n => n.id === id);
+      if (!note) return;
+      this.notesService.softDelete(note.id);
+      this.loadNotes();
   }
 
   cancelEdit(): void {

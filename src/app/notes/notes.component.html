@@ -24,10 +24,17 @@
   <div class="note" *ngFor="let note of notes">
     <h3>{{ note.title }}</h3>
     <p>{{ note.content }}</p>
-    <small>{{ note.createdAt | date:'short' }}</small>
+    <small>Created at: {{ note.createdAt | date:'short' }}</small>
+    <br />
+    <small>Last modified at: {{ note.lastModifiedAt | date:'short' }}</small>
+    <br />
+    <small>Deleted at: {{ note.deletionAt | date:'short' }}</small>
+    <br />
+    <small>Deleted: {{ note.deleted ? 'Yes' : 'No' }}</small>
     <div class="actions">
       <button (click)="edit(note)">Edit</button>
-      <button (click)="delete(note.id)">Delete</button>
+      <button (click)="softDelete(note.id)">Soft Delete</button>
+      <button (click)="hardDelete(note.id)">Hard Delete</button>
     </div>
   </div>
 </div>

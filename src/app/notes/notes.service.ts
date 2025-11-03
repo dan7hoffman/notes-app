@@ -20,21 +20,43 @@ export class NotesService {
     return this.repo.getAll();
   }
 // Add a new note to the repository
-  add(note: Note): void {
+  add(data: {title: string, content: string}): Note {
+    const newNote: Note = {
+      id: Date.now(),
+      title: data.title,
+      content: data.content,
+      createdAt: new Date(),
+      lastModifiedAt: new Date(),
+    };
     // Get the current notes, add the new note, and save the updated list
-    const notes = this.repo.getAll();
-    notes.push(note);
+    const notes = this.repo.getAll().map(n => ({ ...n })); // shallow copy
+    notes.push(newNote);
     // Save the updated list of notes to localStorage
     this.repo.saveAll(notes);
+    return newNote;
   }
 // Update an existing note in the repository
-  update(note: Note): void {
-    // Map through existing notes and replace the matching note with the updated one
-    const notes = this.repo.getAll().map(n => n.id === note.id ? note : n);
-    // Save the updated list of notes to localStorage
-    this.repo.saveAll(notes);
+  update(id: number, updates: {title?: string, content?: string}): void {
+  const notes = this.repo.getAll().map(n => ({ ...n })); // shallow copy
+  const target = notes.find(n => n.id === id);
+  if (!target) return;
+  Object.assign(target, updates, { lastModifiedAt: new Date() }); // merge updates
+  this.repo.saveAll(notes);
   }
+
+
+  // Soft delete a note by marking it as deleted
+  softDelete(id: number): void {
+  const notes = this.repo.getAll().map(n => ({ ...n })); // shallow copy
+  const target = notes.find(n => n.id === id);
+  if (!target) return;
+  target.deleted = true;
+  target.deletionAt = new Date();
+  target.lastModifiedAt = new Date();
+  this.repo.saveAll(notes);
+}
 // Delete a note from the repository by its ID
+// Hard delete
   delete(id: number): void {
     // Filter out the note with the specified ID and save the updated list
     const notes = this.repo.getAll().filter(n => n.id !== id);

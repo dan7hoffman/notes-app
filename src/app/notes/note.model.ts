@@ -3,4 +3,7 @@ export interface Note {
   title: string;
   content: string;
   createdAt: Date;
+  lastModifiedAt?: Date;
+  deletionAt?: Date;
+  deleted?: boolean;
 }
