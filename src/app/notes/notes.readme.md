@@ -22,3 +22,9 @@ Next Steps:
 -- Moved substantial business/data logic from notes.component.ts to notes.service.ts
 -- Done
 - Add in a note count metric card that auto updates and this may be accomplished with RxJS interval/or signals.
+-- Done
+- Add in layout app-shell
+-- Done
+- Investigate adding in a STATE layer between PRESENTATION and SERVICE. Technically with our SIZE of this single use application, leveraging our current notesState.service.ts is best practice. Updated layers to leverage the stateservice, when user lands on the notes.component.ts page it does the inital GETALL() load and push into state service.
+-- Done
+- Added in Active Notes and Deleted Notes (Soft) metrics into component via state service. Next step is to look at "filtering" the list itself

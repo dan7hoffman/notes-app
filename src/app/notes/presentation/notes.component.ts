@@ -12,8 +12,13 @@ import { NotesStateService } from '../service/notesState.service';
   styleUrls: ['./notes.component.scss']
 })
 export class NotesComponent implements OnInit {
-  notes: Note[] = [];
+  // Use observables from state service instead of local array
+  notes$ = this.notesState.notes$;
   noteCount$ = this.notesState.noteCount$;
+  activeNotes$ = this.notesState.activeNotes$;
+  activeNoteCount$ = this.notesState.activeNoteCount$;
+  deletedNotes$ = this.notesState.deletedNotes$;
+  deletedNoteCount$ = this.notesState.deletedNoteCount$;
   newTitle = '';
   newContent = '';
   editingNote: Note | null = null;
@@ -24,13 +29,11 @@ export class NotesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadNotes();
+    // Load notes into state once - no need to reload after each operation
+    this.notesService.getNotes();
   }
-
-  loadNotes(): void {
-    this.notes = this.notesService.getNotes();
-  }
-
+//Handles both add and update based on editingNote state
+//State service automatically updates via notes$ observable
   addOrUpdate(): void {
     if (this.editingNote) {
       this.notesService.update(this.editingNote.id, {
@@ -47,7 +50,7 @@ export class NotesComponent implements OnInit {
 
     this.newTitle = '';
     this.newContent = '';
-    this.loadNotes();
+    // No manual reload needed - state service updates automatically
   }
 
   edit(note: Note): void {
@@ -57,17 +60,17 @@ export class NotesComponent implements OnInit {
   }
 
   //This is a hard delete
+  //State service automatically updates via notes$ observable
   hardDelete(id: number): void {
     this.notesService.delete(id);
-    this.loadNotes();
+    // No manual reload needed - state service updates automatically
   }
 
   //This is a soft delete via flagging update
+  //State service automatically updates via notes$ observable
   softDelete(id: number): void {
-      const note = this.notes.find(n => n.id === id);
-      if (!note) return;
-      this.notesService.softDelete(note.id);
-      this.loadNotes();
+      this.notesService.softDelete(id);
+      // No manual reload needed - state service updates automatically
   }
 
   cancelEdit(): void {

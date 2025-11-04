@@ -18,10 +18,10 @@ export class NotesService {
     private notesState: NotesStateService
   ) {}
 
-  // Retrieve all notes from repository
+  // Retrieve all notes from repository and update state
   getNotes(): Note[] {
     const notes = this.repo.getAll();
-    this.notesState.setNoteCount(notes.length);
+    this.notesState.setNotes(notes);
     return notes;
   }
 // Add a new note to the repository
@@ -38,6 +38,7 @@ export class NotesService {
     notes.push(newNote);
     // Save the updated list of notes to localStorage
     this.repo.saveAll(notes);
+    this.notesState.setNotes(notes);
     return newNote;
   }
 // Update an existing note in the repository
@@ -47,6 +48,7 @@ export class NotesService {
   if (!target) return;
   Object.assign(target, updates, { lastModifiedAt: new Date() }); // merge updates
   this.repo.saveAll(notes);
+  this.notesState.setNotes(notes);
   }
 
 
@@ -59,6 +61,7 @@ export class NotesService {
   target.deletionAt = new Date();
   target.lastModifiedAt = new Date();
   this.repo.saveAll(notes);
+  this.notesState.setNotes(notes);
 }
 // Delete a note from the repository by its ID
 // Hard delete
@@ -66,5 +69,6 @@ export class NotesService {
     // Filter out the note with the specified ID and save the updated list
     const notes = this.repo.getAll().filter(n => n.id !== id);
     this.repo.saveAll(notes);
+    this.notesState.setNotes(notes);
   }
 }

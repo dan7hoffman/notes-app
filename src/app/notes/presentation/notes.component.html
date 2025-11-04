@@ -1,6 +1,8 @@
 <div class="notes-container">
   <h2>My Notes</h2>
-    <p>Number of Notes: {{ noteCount$ | async }}</p>
+  <p>Total Notes: {{ noteCount$ | async }}</p>
+  <p>Active Notes: {{ activeNoteCount$ | async }}</p>
+  <p>Deleted Notes: {{ deletedNoteCount$ | async }}</p>
 
   <form (ngSubmit)="addOrUpdate()" #noteForm="ngForm">
     <input
@@ -22,7 +24,7 @@
     <button type="button" *ngIf="editingNote" (click)="cancelEdit()">Cancel</button>
   </form>
 
-  <div class="note" *ngFor="let note of notes">
+  <div class="note" *ngFor="let note of notes$ | async">
     <h3>{{ note.title }}</h3>
     <p>{{ note.content }}</p>
     <small>Created at: {{ note.createdAt | date:'short' }}</small>
