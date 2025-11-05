@@ -24,16 +24,21 @@
     <button type="button" *ngIf="editingNote" (click)="cancelEdit()">Cancel</button>
   </form>
 
-  <div class="note" *ngFor="let note of notes$ | async">
+  <div class="filter">
+    <button (click)="setFilter('ALL')" [class.active]="currentFilter === 'ALL'">All ({{ noteCount$ | async }})</button>
+    <button (click)="setFilter('ACTIVE')" [class.active]="currentFilter === 'ACTIVE'">Active ({{ activeNoteCount$ | async }})</button>
+  </div>
+
+  <div class="note" *ngFor="let note of filteredNotes$ | async">
     <h3>{{ note.title }}</h3>
     <p>{{ note.content }}</p>
-    <small>Created at: {{ note.createdAt | date:'short' }}</small>
+    <small>Created at: {{ formatDate(note.createdAt) }}</small>
     <br />
-    <small>Last modified at: {{ note.lastModifiedAt | date:'short' }}</small>
+    <small *ngIf="note.lastModifiedAt">Last modified at: {{ formatDateTime(note.lastModifiedAt) }}</small>
     <br />
-    <small>Deleted at: {{ note.deletionAt | date:'short' }}</small>
+    <small *ngIf="note.deletionAt">Deleted at: {{ formatDateTime(note.deletionAt) }}</small>
     <br />
-    <small>Deleted: {{ note.deleted ? 'Yes' : 'No' }}</small>
+    <small *ngIf="note.deleted">Deleted: {{ note.deleted ? 'Yes' : 'No' }}</small>
     <div class="actions">
       <button (click)="edit(note)">Edit</button>
       <button (click)="softDelete(note.id)">Soft Delete</button>

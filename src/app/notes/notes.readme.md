@@ -28,3 +28,7 @@ Next Steps:
 - Investigate adding in a STATE layer between PRESENTATION and SERVICE. Technically with our SIZE of this single use application, leveraging our current notesState.service.ts is best practice. Updated layers to leverage the stateservice, when user lands on the notes.component.ts page it does the inital GETALL() load and push into state service.
 -- Done
 - Added in Active Notes and Deleted Notes (Soft) metrics into component via state service. Next step is to look at "filtering" the list itself
+-- Done
+- Add in Date Utils to format Date/DateTime to standard
+-- Done
+- Next look at incorporating a search bar
