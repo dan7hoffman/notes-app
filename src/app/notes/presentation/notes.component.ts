@@ -7,15 +7,6 @@ import { NotesStateService } from '../service/notesState.service';
 import { BehaviorSubject, Observable, switchMap } from 'rxjs';
 import { formatAbsoluteDate, formatAbsoluteDateTime } from '../utils/date-formatter.util';
 
-interface NotesState {
-  notes$: Observable<Note[]>;
-  noteCount$: Observable<number>;
-  activeNotes$: Observable<Note[]>;
-  activeNoteCount$: Observable<number>;
-  deletedNotes$: Observable<Note[]>;
-  deletedNoteCount$: Observable<number>;
-}
-
 @Component({
   selector: 'app-notes',
   imports: [CommonModule, FormsModule],
