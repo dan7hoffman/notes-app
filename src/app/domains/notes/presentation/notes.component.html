@@ -1,8 +1,8 @@
 <div class="notes-container">
   <h2>My Notes</h2>
-  <p>Total Notes: {{ noteCount$ | async }}</p>
-  <p>Active Notes: {{ activeNoteCount$ | async }}</p>
-  <p>Deleted Notes: {{ deletedNoteCount$ | async }}</p>
+  <p>Total Notes: {{ noteCount() }}</p>
+  <p>Active Notes: {{ activeNoteCount() }}</p>
+  <p>Deleted Notes: {{ deletedNoteCount() }}</p>
 
   <form (ngSubmit)="addOrUpdate()" #noteForm="ngForm">
     <input
@@ -25,11 +25,22 @@
   </form>
 
   <div class="filter">
-    <button (click)="setFilter('ALL')" [class.active]="currentFilter === 'ALL'">All ({{ noteCount$ | async }})</button>
-    <button (click)="setFilter('ACTIVE')" [class.active]="currentFilter === 'ACTIVE'">Active ({{ activeNoteCount$ | async }})</button>
+    <button (click)="setFilter('ALL')" [class.active]="currentFilter === 'ALL'">All ({{ noteCount() }})</button>
+    <button (click)="setFilter('ACTIVE')" [class.active]="currentFilter === 'ACTIVE'">Active ({{ activeNoteCount() }})</button>
   </div>
 
-  <div class="note" *ngFor="let note of filteredNotes$ | async">
+<input
+  type="text"
+  placeholder="Search..."
+  [ngModel]="searchTerm()"
+  (ngModelChange)="searchTerm.set($event)"
+>
+
+  <div *ngIf="filteredNotes().length === 0">
+    <p>No notes to display.</p>
+  </div>
+
+  <div class="note" *ngFor="let note of filteredNotes()">
     <h3>{{ note.title }}</h3>
     <p>{{ note.content }}</p>
     <small>Created at: {{ formatDate(note.createdAt) }}</small>

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotesStateService } from '../../notes/service/notesState.service';
+import { NotesStateService } from '../../domains/notes/service/notesState.service';
 
 @Component({
   selector: 'app-header',
@@ -10,8 +10,8 @@ import { NotesStateService } from '../../notes/service/notesState.service';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  // Access note count from state service - no localStorage read needed!
-  noteCount$ = this.notesState.noteCount$;
+  // Access note count signal from state service - automatically reactive!
+  noteCount = this.notesState.noteCount;
 
   constructor(private notesState: NotesStateService) {}
 }

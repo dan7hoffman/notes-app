@@ -31,4 +31,21 @@ Next Steps:
 -- Done
 - Add in Date Utils to format Date/DateTime to standard
 -- Done
+- Next migrate RxJS Observables to SIGNALS for future proofing
+-- Done
 - Next look at incorporating a search bar
+
+
+Layers Updated Version
+----
+notes.component.ts <-> notes.service.ts
+- CRUD
+notes.component.ts <-- notesState.service.ts
+- pulls in SIGNALS from state
+----
+notes.service.ts <-> notesState.service.ts
+- updates SIGNALS
+notes.service.ts <-> notes.repository.ts
+----
+notes.repository.ts <-> date-formatter.util.ts
+- date sets standard on GET ALL

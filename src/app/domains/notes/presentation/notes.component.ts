@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { NotesService } from '../service/notes.service';
 import { Note } from '../note.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NotesStateService } from '../service/notesState.service';
-import { BehaviorSubject, Observable, switchMap } from 'rxjs';
 import { formatAbsoluteDate, formatAbsoluteDateTime } from '../utils/date-formatter.util';
 
 @Component({
@@ -15,39 +14,57 @@ import { formatAbsoluteDate, formatAbsoluteDateTime } from '../utils/date-format
   styleUrls: ['./notes.component.scss']
 })
 export class NotesComponent implements OnInit {
-  // Use observables from state service instead of local array
-  notes$ = this.notesState.notes$;
-  noteCount$ = this.notesState.noteCount$;
-  activeNotes$ = this.notesState.activeNotes$;
-  activeNoteCount$ = this.notesState.activeNoteCount$;
-  deletedNotes$ = this.notesState.deletedNotes$;
-  deletedNoteCount$ = this.notesState.deletedNoteCount$;
-  newTitle = '';
-  newContent = '';
-  editingNote: Note | null = null;
-  private filterSubject = new BehaviorSubject<'ALL' | 'ACTIVE'>('ALL');
-  currentFilter: 'ALL' | 'ACTIVE' = 'ALL';
-  filteredNotes$ = this.filterSubject.asObservable().pipe(
-    switchMap(filter => {
-      if (filter === 'ALL') {
-        return this.notes$;
-      } else {
-        return this.activeNotes$;
-      }
-    })
-  );
 
-  // Expose date formatting utils to template
-  formatDate = formatAbsoluteDate;
-  formatDateTime = formatAbsoluteDateTime;
-  constructor(
+    constructor(
     private notesService: NotesService,
     private notesState: NotesStateService
   ) {}
 
-    setFilter(filter: 'ALL' | 'ACTIVE') {
+  // Use signals from state service - automatically reactive!
+  notes = this.notesState.notes;
+  noteCount = this.notesState.noteCount;
+  activeNotes = this.notesState.activeNotes;
+  activeNoteCount = this.notesState.activeNoteCount;
+  deletedNotes = this.notesState.deletedNotes;
+  deletedNoteCount = this.notesState.deletedNoteCount;
+
+  // Form fields
+  newTitle = '';
+  newContent = '';
+
+  // Track if we are editing an existing note
+  editingNote: Note | null = null;
+
+  // Filter state as a signal instead of BehaviorSubject
+  private filterSignal = signal<'ALL' | 'ACTIVE'>('ALL');
+  currentFilter: 'ALL' | 'ACTIVE' = 'ALL';
+
+    // Search term as a signal
+  searchTerm = signal('');
+
+// Computed property for filtered notes based on current filter and search term
+  filteredNotes = computed(() => {
+  const filter = this.filterSignal();
+  const search = this.searchTerm().toLowerCase();
+  let notes = filter === 'ALL' ? this.notes() : this.activeNotes();
+  
+  if (search) {
+    notes = notes.filter(n =>
+      n.title.toLowerCase().includes(search) ||
+      n.content.toLowerCase().includes(search)
+    );
+  }
+  
+  return notes;
+});
+
+  // Expose date formatting utils to template
+  formatDate = formatAbsoluteDate;
+  formatDateTime = formatAbsoluteDateTime;
+
+  setFilter(filter: 'ALL' | 'ACTIVE'): void {
     this.currentFilter = filter;
-    this.filterSubject.next(filter);
+    this.filterSignal.set(filter);  // Signal update instead of .next()
   }
 
   ngOnInit(): void {

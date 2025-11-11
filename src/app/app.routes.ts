@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell.component';
-import { NotesComponent } from './notes/presentation/notes.component';
+import { NotesComponent } from './domains/notes/presentation/notes.component';
 
 export const routes: Routes = [
   {
