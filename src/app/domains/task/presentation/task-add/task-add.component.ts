@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TaskStatus, TaskPriority, TaskTags } from '../../task.model';
 import { TaskService } from '../../service/task.service';
 import { TaskStateService } from '../../service/taskState.service';
@@ -7,7 +8,7 @@ import { TaskStateService } from '../../service/taskState.service';
 @Component({
   selector: 'app-task-add',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './task-add.component.html',
   styleUrls: ['./task-add.component.scss'],
 })
