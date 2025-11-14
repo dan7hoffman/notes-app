@@ -90,53 +90,38 @@ export class TaskListComponent {
   }
 
   editTask(taskId: number) {
-    console.log('Edit task button with ID clicked:', taskId);
-    // When pressed, fill in the existing ADD form with the task data for editing
-    // Should utilize a state management service to share data between components
     this.taskState.setSelectedTaskId(taskId);
   }
 
   deleteTask(taskId: number) {
-    console.log('Delete task button with ID clicked:', taskId);
     this.taskService.delete(taskId);
   }
 
   softDeleteTask(taskId: number) {
-    console.log('Soft delete task button with ID clicked:', taskId);
     this.taskService.softDelete(taskId);
   }
 
   undoSoftDeleteTask(taskId: number) {
-    console.log('Undo soft delete task button with ID clicked:', taskId);
     this.taskService.update(taskId, { deleted: false, deletionAt: undefined });
   }
 
   startTask(taskId: number) {
-    console.log('Start task button with ID clicked:', taskId);
     this.taskService.update(taskId, { status: TaskStatus.InProgress });
   }
 
   completeTask(taskId: number) {
-    console.log('Complete task button with ID clicked:', taskId);
     this.taskService.update(taskId, { status: TaskStatus.Completed });
   }
 
   pauseTask(taskId: number) {
-    console.log('Pause task button with ID clicked:', taskId);
     this.taskService.update(taskId, { status: TaskStatus.Pending });
   }
 
   resumeTask(taskId: number) {
-    console.log('Resume task button with ID clicked:', taskId);
     this.taskService.update(taskId, { status: TaskStatus.InProgress });
   }
 
   revertTaskChanges(taskId: number, historyIndex: number) {
-    console.log(
-      'Revert task changes button with ID clicked:',
-      taskId,
-      historyIndex
-    );
     this.taskService.revertToHistory(taskId, historyIndex);
   }
 }
