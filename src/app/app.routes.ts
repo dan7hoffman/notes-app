@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell.component';
 import { NotesComponent } from './domains/notes/presentation/notes.component';
 import { TaskComponent } from './domains/task/presentation/task/task.component';
+import { LoggingListComponent } from './domains/logging/presentation/logging-list/logging-list.component';
 
 export const routes: Routes = [
   {
@@ -15,6 +16,10 @@ export const routes: Routes = [
       {
         path: 'tasks',
         component: TaskComponent,
+      },
+      {
+        path: 'logging',
+        component: LoggingListComponent
       }
       // You can add more child routes here later
       // e.g., { path: 'settings', component: SettingsComponent }

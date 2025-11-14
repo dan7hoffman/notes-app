@@ -17,6 +17,7 @@ interface NavItem {
 export class SidebarComponent {
   navItems: NavItem[] = [
     { path: '/notes', label: 'Notes' },
-    { path: '/tasks', label: 'Tasks' }
+    { path: '/tasks', label: 'Tasks' },
+    { path: '/logging', label: 'Logging'}
   ];
 }
