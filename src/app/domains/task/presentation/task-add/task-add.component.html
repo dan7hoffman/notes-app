@@ -1,0 +1,52 @@
+<div class="task-add-container">
+  @if (taskState.selectedTaskId() !== null) { Editing Task ID:
+  {{ taskState.selectedTaskId() }}
+  } @else { Adding New Task }
+  <form (ngSubmit)="submitTask()">
+    <input
+      type="text"
+      placeholder="Task Title"
+      [(ngModel)]="newTitle"
+      name="title"
+      required
+    />
+    <textarea
+      placeholder="Task Content"
+      [(ngModel)]="newContent"
+      name="content"
+    ></textarea>
+    <select [(ngModel)]="newStatus" name="status">
+      <option *ngFor="let status of taskStatuses" [value]="status">
+        {{ status }}
+      </option>
+    </select>
+    <select [(ngModel)]="newPriority" name="priority">
+      <option *ngFor="let priority of taskPriorities" [value]="priority">
+        {{ priority }}
+      </option>
+    </select>
+
+    <div class="tags-selection">
+      <label>Tags:</label>
+      <div class="tag-options">
+        <label *ngFor="let tag of taskTags" class="tag-checkbox">
+          <input
+            type="checkbox"
+            [checked]="isTagSelected(tag)"
+            (change)="toggleTag(tag)"
+          />
+          {{ tag }}
+        </label>
+      </div>
+    </div>
+
+    <button type="submit">
+      {{ taskState.selectedTaskId() !== null ? "Update Task" : "Add Task" }}
+    </button>
+    @if (taskState.selectedTaskId() !== null) {
+    <button type="button" (click)="cancelEdit()">Cancel</button>
+    } @else {
+    <button type="button" (click)="clearForm()">Clear</button>
+    }
+  </form>
+</div>

@@ -1,0 +1,42 @@
+<div class="task-component-container">
+  <h3>Task Management</h3>
+  <p>Global Task Metrics</p>
+  <div class="metrics">
+    <div class="metric-badge">
+      <span class="metric-value">{{ taskCount() }}</span>
+      <span class="metric-label">Total</span>
+    </div>
+    <div class="metric-badge pending">
+      <span class="metric-value">{{ pendingTaskCount() }}</span>
+      <span class="metric-label">Pending</span>
+    </div>
+    <div class="metric-badge in-progress">
+      <span class="metric-value">{{ inProgressTaskCount() }}</span>
+      <span class="metric-label">In Progress</span>
+    </div>
+    <div class="metric-badge completed">
+      <span class="metric-value">{{ completedTaskCount() }}</span>
+      <span class="metric-label">Completed</span>
+    </div>
+    <div class="metric-badge average-completion-time">
+      <span class="metric-value">{{ averageCompletionTime() }}</span>
+      <span class="metric-label">Avg. Time</span>
+    </div>
+    <div class="metric-badge completion-rate">
+      <span class="metric-value">{{ completionRate() }}</span>
+      <span class="metric-label">Completion Rate</span>
+    </div>
+    <div class="metric-badge pending-rate">
+      <span class="metric-value">{{ pendingRate() }}</span>
+      <span class="metric-label">Pending Rate</span>
+    </div>
+    <div class="metric-badge in-progress-rate">
+      <span class="metric-value">{{ inProgressRate() }}</span>
+      <span class="metric-label">In Progress Rate</span>
+    </div>
+  </div>
+  <br /><br />
+  <app-task-add></app-task-add>
+  <app-task-list></app-task-list>
+  <app-task-kanban></app-task-kanban>
+</div>

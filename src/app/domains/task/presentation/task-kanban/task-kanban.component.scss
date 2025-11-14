@@ -1,0 +1,43 @@
+.kanban-container {
+  display: flex;
+  gap: 1rem;
+}
+
+.kanban-column {
+  flex: 1;
+  background: #f4f4f4;
+  padding: 1rem;
+  border-radius: 8px;
+  min-height: 300px;
+}
+
+.kanban-title {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.kanban-task {
+  background: white;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  cursor: grab;
+}
+
+.priority-tag {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  float: right;
+}
+
+.priority-tag.low {
+  background: #d3f9d8;
+}
+.priority-tag.medium {
+  background: #ffe28a;
+}
+.priority-tag.high {
+  background: #ff8a8a;
+}

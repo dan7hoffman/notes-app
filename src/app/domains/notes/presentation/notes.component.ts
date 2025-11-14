@@ -4,7 +4,7 @@ import { Note } from '../note.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NotesStateService } from '../service/notesState.service';
-import { formatAbsoluteDate, formatAbsoluteDateTime } from '../utils/date-formatter.util';
+import { formatAbsoluteDate, formatAbsoluteDateTime } from '../../../shared/utils/date-formatter.util';
 
 @Component({
   selector: 'app-notes',

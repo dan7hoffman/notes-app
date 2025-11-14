@@ -35,6 +35,9 @@ Next Steps:
 -- Done
 - Next look at incorporating a search bar
 
+- CHALLENGE!
+- See if we can create a net new TASK TRACKER application
+
 
 Layers Updated Version
 ----

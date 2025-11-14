@@ -1,0 +1,39 @@
+<div class="kanban-container" cdkDropListGroup>
+  <div
+    class="kanban-column"
+    *ngFor="let status of statusColumns"
+    cdkDropList
+    [id]="status"
+    [cdkDropListData]="getTasksByStatus(status)"
+    (cdkDropListDropped)="drop($event, status)"
+  >
+    <div class="column-header">
+      <h3>{{ status }}</h3>
+      <select class="sort-dropdown" (change)="onSortChange(status, $event)">
+        <option value="">No Sort</option>
+        <option value="date-asc">Date: Oldest First</option>
+        <option value="date-desc">Date: Newest First</option>
+        <option value="priority-asc">Priority: Low to High</option>
+        <option value="priority-desc">Priority: High to Low</option>
+        <option value="title-asc">Title: A to Z</option>
+        <option value="title-desc">Title: Z to A</option>
+      </select>
+    </div>
+
+    <div
+      class="kanban-task"
+      *ngFor="let task of getTasksByStatus(status); trackBy: trackById"
+      cdkDrag
+      [cdkDragData]="task"
+    >
+      <h4>{{ task.title }}</h4>
+      <p>{{ task.content }}</p>
+
+      <small>Last updated: {{ formatDate(task.lastModifiedAt) }}</small>
+
+      <span class="priority-tag" [class]="task.priority">
+        {{ task.priority }}
+      </span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+.task-component-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #f9f9f9;
+}
+
+h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+// Metrics badges - responsive grid with max 3 per row
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-badge {
+  background: #007bff;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .metric-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &.pending {
+    background: #ffc107;
+    color: #333;
+  }
+
+  &.in-progress {
+    background: #17a2b8;
+  }
+
+  &.completed {
+    background: #28a745;
+  }
+  &.completion-rate {
+    background: #20c997;
+  }
+  &.pending-rate {
+    background: #fd7e14;
+  }
+  &.in-progress-rate {
+    background: #6610f2;
+  }
+
+  &.average-completion-time {
+    background: #6f42c1;
+  }
+}
