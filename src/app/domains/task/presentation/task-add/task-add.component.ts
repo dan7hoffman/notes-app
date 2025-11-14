@@ -23,7 +23,7 @@ export class TaskAddComponent {
       if (taskId !== null) {
         this.patchForm(taskId);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   // Form fields using signals for consistent state paradigm
