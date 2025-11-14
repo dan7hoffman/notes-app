@@ -8,10 +8,13 @@ import {
   TaskTags,
 } from '../task.model';
 import { TaskStateService } from './taskState.service';
+import { TaskHistoryService } from './taskHistory.service';
+import { DEFAULT_TASK_VALUES } from '../task.constants';
 
 /**
  * Service that acts as a bridge between components and TaskRepository,
  * providing a simpler API for managing tasks.
+ * Delegates all history management to TaskHistoryService.
  */
 
 export type NewTaskData = Omit<Task, 'id' | 'createdAt' | 'lastModifiedAt'>;
@@ -34,7 +37,8 @@ export interface TaskUpdateData {
 export class TaskService {
   constructor(
     private repo: TaskRepository,
-    private taskState: TaskStateService
+    private taskState: TaskStateService,
+    private historyService: TaskHistoryService
   ) {}
 
   // Retrieve all tasks from repository and update state
@@ -44,11 +48,24 @@ export class TaskService {
     return tasks;
   }
 
-  // Add a new task to the repository
+  /**
+   * Add a new task to the repository.
+   * Creates immutable task object with initial history entry.
+   */
   add(data: NewTaskData): Task {
     const now = new Date();
     const id = Date.now();
 
+    // Create initial history using TaskHistoryService
+    const initialHistory = this.historyService.createInitialHistory({
+      title: data.title,
+      content: data.content,
+      status: data.status,
+      priority: data.priority,
+      tags: data.tags,
+    });
+
+    // Create new task object (immutable)
     const newTask: Task = {
       id,
       title: data.title,
@@ -57,23 +74,13 @@ export class TaskService {
       lastModifiedAt: now,
       status: data.status,
       priority: data.priority,
-      tags: data.tags,
-      deleted: false,
+      tags: data.tags || DEFAULT_TASK_VALUES.TAGS,
+      deleted: DEFAULT_TASK_VALUES.DELETED,
       deletionAt: undefined,
-      history: [
-        {
-          modifiedAt: now,
-          changes: {
-            title: { oldValue: null, newValue: data.title },
-            content: { oldValue: null, newValue: data.content },
-            status: { oldValue: null, newValue: data.status },
-            priority: { oldValue: null, newValue: data.priority },
-            tags: { oldValue: null, newValue: data.tags },
-          },
-        },
-      ],
+      history: [initialHistory],
     };
 
+    // Create new array with new task (immutable)
     const tasks = [...this.repo.getAll(), newTask];
     this.repo.saveAll(tasks);
     this.taskState.setTasks(tasks);
@@ -81,128 +88,153 @@ export class TaskService {
     return newTask;
   }
 
-  // Update an existing task in the repository
+  /**
+   * Update an existing task in the repository.
+   * Uses TaskHistoryService for change detection and history tracking.
+   * Ensures immutability by creating new objects/arrays.
+   */
   update(id: number, updates: TaskUpdateData): void {
-    const tasks = this.repo.getAll().map((t) => ({ ...t }));
-    const target = tasks.find((t) => t.id === id);
+    const currentTasks = this.repo.getAll();
+    const targetIndex = currentTasks.findIndex((t) => t.id === id);
 
-    if (!target) return;
+    if (targetIndex === -1) return;
 
+    const currentTask = currentTasks[targetIndex];
     const now = new Date();
-    const changes: TaskHistory['changes'] = {};
 
-    for (const key of Object.keys(updates) as (keyof TaskUpdateData)[]) {
-      if (key === 'history' || key === 'lastModifiedAt') continue;
+    // Use TaskHistoryService to create history entry
+    const historyEntry = this.historyService.createUpdateHistory(
+      currentTask,
+      updates
+    );
 
-      const newValue = updates[key];
-      const oldValue = target[key as keyof Task];
+    // Create new task object with updates (immutable)
+    const updatedTask: Task = {
+      ...currentTask,
+      ...updates,
+      lastModifiedAt: now,
+      // Add history entry if there were changes
+      history: historyEntry
+        ? this.historyService.addHistoryEntry(currentTask.history, historyEntry)
+        : currentTask.history,
+    };
 
-      if (newValue !== undefined && this.hasChanged(oldValue, newValue)) {
-        // ✅ Strongly typed assignment
-        (changes as any)[key] = {
-          oldValue,
-          newValue,
-        };
-      }
-    }
+    // Create new tasks array with updated task (immutable)
+    const updatedTasks = [
+      ...currentTasks.slice(0, targetIndex),
+      updatedTask,
+      ...currentTasks.slice(targetIndex + 1),
+    ];
 
-    if (Object.keys(changes).length > 0) {
-      target.history = target.history || [];
-      target.history.push({
-        modifiedAt: now,
-        changes,
-      });
-    }
-
-    Object.assign(target, updates, { lastModifiedAt: now });
-    this.repo.saveAll(tasks);
-    this.taskState.setTasks(tasks);
+    this.repo.saveAll(updatedTasks);
+    this.taskState.setTasks(updatedTasks);
   }
 
-  // Helper
-  private hasChanged(a: any, b: any): boolean {
-    return JSON.stringify(a) !== JSON.stringify(b);
-  }
-
-  // Soft delete a task by marking it as deleted
+  /**
+   * Soft delete a task by marking it as deleted.
+   * Uses TaskHistoryService to create deletion history.
+   * Ensures immutability by creating new objects/arrays.
+   */
   softDelete(id: number): void {
-    const tasks = this.repo.getAll().map((t) => ({ ...t }));
-    const target = tasks.find((t) => t.id === id);
+    const currentTasks = this.repo.getAll();
+    const targetIndex = currentTasks.findIndex((t) => t.id === id);
 
-    if (!target) return;
+    if (targetIndex === -1) return;
 
+    const currentTask = currentTasks[targetIndex];
     const now = new Date();
 
-    // Initialize history if not present
-    target.history = target.history || [];
+    // Create deletion history using TaskHistoryService
+    const deleteHistory = this.historyService.createDeleteHistory(currentTask);
 
-    // Record the deletion action in history with old/new values
-    target.history.push({
-      modifiedAt: now,
-      changes: {
-        deleted: {
-          oldValue: target.deleted ?? false,
-          newValue: true,
-        },
-        deletionAt: {
-          oldValue: target.deletionAt ?? undefined,
-          newValue: now,
-        },
-      },
-    });
+    // Create new task object with soft delete flags (immutable)
+    const deletedTask: Task = {
+      ...currentTask,
+      deleted: true,
+      deletionAt: now,
+      lastModifiedAt: now,
+      history: this.historyService.addHistoryEntry(
+        currentTask.history,
+        deleteHistory
+      ),
+    };
 
-    // Apply soft delete flags
-    target.deleted = true;
-    target.deletionAt = now;
-    target.lastModifiedAt = now;
+    // Create new tasks array with deleted task (immutable)
+    const updatedTasks = [
+      ...currentTasks.slice(0, targetIndex),
+      deletedTask,
+      ...currentTasks.slice(targetIndex + 1),
+    ];
 
-    // Persist updated list
-    this.repo.saveAll(tasks);
-    this.taskState.setTasks(tasks);
+    this.repo.saveAll(updatedTasks);
+    this.taskState.setTasks(updatedTasks);
   }
 
-  // Permanently delete a task from the repository
+  /**
+   * Permanently delete a task from the repository.
+   * Ensures immutability by creating new filtered array.
+   */
   delete(id: number): void {
-    const tasks = this.repo.getAll().filter((t) => t.id !== id);
-    this.repo.saveAll(tasks);
-    this.taskState.setTasks(tasks);
+    const currentTasks = this.repo.getAll();
+    // Filter creates a new array (immutable)
+    const filteredTasks = currentTasks.filter((t) => t.id !== id);
+    this.repo.saveAll(filteredTasks);
+    this.taskState.setTasks(filteredTasks);
   }
 
-  //Revert task to a previous state based on history index
+  /**
+   * Revert task to a previous state based on history index.
+   * Uses TaskHistoryService to apply revert and create revert history.
+   * Ensures immutability by creating new objects/arrays.
+   */
   revertToHistory(taskId: number, historyIndex: number): void {
-    const tasks = this.repo.getAll().map((t) => ({ ...t }));
-    const target = tasks.find((t) => t.id === taskId);
+    const currentTasks = this.repo.getAll();
+    const targetIndex = currentTasks.findIndex((t) => t.id === taskId);
 
+    if (targetIndex === -1) return;
+
+    const currentTask = currentTasks[targetIndex];
+
+    // Validate history index
     if (
-      !target ||
-      !target.history ||
+      !currentTask.history ||
       historyIndex < 0 ||
-      historyIndex >= target.history.length
+      historyIndex >= currentTask.history.length
     ) {
       return;
     }
 
-    const historyEntry = target.history[historyIndex];
+    const historyEntry = currentTask.history[historyIndex];
     const now = new Date();
 
-    // Apply old values from the selected history entry
-    for (const [key, change] of Object.entries(historyEntry.changes)) {
-      (target as any)[key] = change.oldValue;
-    }
+    // Use TaskHistoryService to get revert updates
+    const revertUpdates = this.historyService.applyHistoryRevert(
+      currentTask,
+      historyEntry
+    );
 
-    // Record this revert action as a new history entry
-    target.history.push({
-      modifiedAt: now,
-      changes: Object.fromEntries(
-        Object.entries(historyEntry.changes).map(([key, change]) => [
-          key,
-          { oldValue: change.newValue, newValue: change.oldValue },
-        ])
+    // Create revert history entry
+    const revertHistory = this.historyService.createRevertHistory(historyEntry);
+
+    // Create new task object with reverted values (immutable)
+    const revertedTask: Task = {
+      ...currentTask,
+      ...revertUpdates,
+      lastModifiedAt: now,
+      history: this.historyService.addHistoryEntry(
+        currentTask.history,
+        revertHistory
       ),
-    });
+    };
 
-    target.lastModifiedAt = now;
-    this.repo.saveAll(tasks);
-    this.taskState.setTasks(tasks);
+    // Create new tasks array with reverted task (immutable)
+    const updatedTasks = [
+      ...currentTasks.slice(0, targetIndex),
+      revertedTask,
+      ...currentTasks.slice(targetIndex + 1),
+    ];
+
+    this.repo.saveAll(updatedTasks);
+    this.taskState.setTasks(updatedTasks);
   }
 }

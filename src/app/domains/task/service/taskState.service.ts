@@ -1,9 +1,11 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Task } from '../task.model';
+import { Task, TaskPriority } from '../task.model';
+import { PRIORITY_VALUES } from '../task.constants';
 
 /**
  * State management service for tasks using Angular signals.
  * Provides reactive state for task list and editing.
+ * Includes business logic for sorting and filtering tasks.
  */
 @Injectable({
   providedIn: 'root',
@@ -14,7 +16,6 @@ export class TaskStateService {
 
   setSelectedTaskId(id: number | null): void {
     this.selectedTaskId.set(id);
-    console.log('Selected Task ID set to:', id);
   }
 
   // Single source of truth: all tasks (writable signal - private)
@@ -110,5 +111,47 @@ export class TaskStateService {
   // Single setter - updates all derived signals automatically
   setTasks(tasks: Task[]): void {
     this._tasks.set(tasks);
+  }
+
+  /**
+   * Business logic: Maps priority to numeric value for sorting.
+   * Moved from presentation layer to maintain separation of concerns.
+   *
+   * @param priority - Task priority string
+   * @returns Numeric value representing priority weight
+   */
+  getPriorityValue(priority: TaskPriority | string): number {
+    return PRIORITY_VALUES[priority] || 0;
+  }
+
+  /**
+   * Business logic: Sorts tasks based on the specified criteria.
+   * Moved from presentation layer to maintain separation of concerns.
+   *
+   * @param tasks - Array of tasks to sort
+   * @param sortBy - Sort criteria (e.g., 'date-asc', 'priority-desc')
+   * @returns Sorted array of tasks (immutable - creates new array)
+   */
+  sortTasks(tasks: Task[], sortBy: string): Task[] {
+    if (!sortBy) return tasks;
+
+    return [...tasks].sort((a, b) => {
+      switch (sortBy) {
+        case 'date-asc':
+          return a.createdAt.getTime() - b.createdAt.getTime();
+        case 'date-desc':
+          return b.createdAt.getTime() - a.createdAt.getTime();
+        case 'priority-asc':
+          return this.getPriorityValue(a.priority) - this.getPriorityValue(b.priority);
+        case 'priority-desc':
+          return this.getPriorityValue(b.priority) - this.getPriorityValue(a.priority);
+        case 'title-asc':
+          return a.title.localeCompare(b.title);
+        case 'title-desc':
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
+      }
+    });
   }
 }

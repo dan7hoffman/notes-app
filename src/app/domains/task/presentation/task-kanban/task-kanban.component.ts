@@ -55,45 +55,16 @@ export class TaskKanbanComponent {
     this.sortOption[status] = target.value;
   }
 
-  // Get tasks for a column with sorting applied
+  /**
+   * Get tasks for a column with sorting applied.
+   * Delegates sorting logic to TaskStateService (dumb presentation layer).
+   */
   getTasksByStatus(status: TaskStatus): Task[] {
     const tasks = this.columnTasks[status]();
     const sortBy = this.sortOption[status];
 
-    if (!sortBy) return tasks;
-
-    return [...tasks].sort((a, b) => {
-      switch (sortBy) {
-        case 'date-asc':
-          return a.createdAt.getTime() - b.createdAt.getTime();
-        case 'date-desc':
-          return b.createdAt.getTime() - a.createdAt.getTime();
-        case 'priority-asc':
-          return (
-            this.priorityValue(a.priority) - this.priorityValue(b.priority)
-          );
-        case 'priority-desc':
-          return (
-            this.priorityValue(b.priority) - this.priorityValue(a.priority)
-          );
-        case 'title-asc':
-          return a.title.localeCompare(b.title);
-        case 'title-desc':
-          return b.title.localeCompare(a.title);
-        default:
-          return 0;
-      }
-    });
-  }
-
-  // Map priority to numeric value for sorting
-  private priorityValue(priority: string): number {
-    const map: Record<string, number> = {
-      low: 1,
-      medium: 2,
-      high: 3,
-    };
-    return map[priority] || 0;
+    // Delegate sorting to TaskStateService (business logic layer)
+    return this.taskState.sortTasks(tasks, sortBy);
   }
 
   trackById(_index: number, task: Task) {

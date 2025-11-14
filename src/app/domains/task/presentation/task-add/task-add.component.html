@@ -6,21 +6,23 @@
     <input
       type="text"
       placeholder="Task Title"
-      [(ngModel)]="newTitle"
+      [value]="newTitle()"
+      (input)="onTitleInput($event)"
       name="title"
       required
     />
     <textarea
       placeholder="Task Content"
-      [(ngModel)]="newContent"
+      [value]="newContent()"
+      (input)="onContentInput($event)"
       name="content"
     ></textarea>
-    <select [(ngModel)]="newStatus" name="status">
+    <select [value]="newStatus()" (change)="onStatusChange($event)" name="status">
       <option *ngFor="let status of taskStatuses" [value]="status">
         {{ status }}
       </option>
     </select>
-    <select [(ngModel)]="newPriority" name="priority">
+    <select [value]="newPriority()" (change)="onPriorityChange($event)" name="priority">
       <option *ngFor="let priority of taskPriorities" [value]="priority">
         {{ priority }}
       </option>

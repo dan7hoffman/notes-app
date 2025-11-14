@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, effect, signal } from '@angular/core';
 import { TaskStatus, TaskPriority, TaskTags } from '../../task.model';
 import { TaskService } from '../../service/task.service';
 import { TaskStateService } from '../../service/taskState.service';
@@ -8,7 +7,7 @@ import { TaskStateService } from '../../service/taskState.service';
 @Component({
   selector: 'app-task-add',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './task-add.component.html',
   styleUrls: ['./task-add.component.scss'],
 })
@@ -26,12 +25,12 @@ export class TaskAddComponent {
     });
   }
 
-  // Form fields for new task and their default values
-  newTitle = '';
-  newContent = '';
-  newStatus: TaskStatus = TaskStatus.Pending;
-  newPriority: TaskPriority = TaskPriority.Medium;
-  newTags: TaskTags[] = [];
+  // Form fields using signals for consistent state paradigm
+  newTitle = signal('');
+  newContent = signal('');
+  newStatus = signal<TaskStatus>(TaskStatus.Pending);
+  newPriority = signal<TaskPriority>(TaskPriority.Medium);
+  newTags = signal<TaskTags[]>([]);
 
   // Expose enums to template
   taskStatuses = Object.values(TaskStatus);
@@ -42,12 +41,11 @@ export class TaskAddComponent {
   patchForm(taskId: number): void {
     const task = this.taskState.tasks().find((t) => t.id === taskId);
     if (task) {
-      this.newTitle = task.title;
-      this.newContent = task.content;
-      this.newStatus = task.status;
-      this.newPriority = task.priority;
-      this.newTags = task.tags || [];
-      console.log('Form patched with task:', taskId);
+      this.newTitle.set(task.title);
+      this.newContent.set(task.content);
+      this.newStatus.set(task.status);
+      this.newPriority.set(task.priority);
+      this.newTags.set(task.tags || []);
     }
   }
 
@@ -62,16 +60,16 @@ export class TaskAddComponent {
   }
 
   addTask() {
-    if (!this.newTitle.trim()) return;
+    const title = this.newTitle();
+    if (!title.trim()) return;
 
     this.taskService.add({
-      title: this.newTitle,
-      content: this.newContent,
-      status: this.newStatus,
-      priority: this.newPriority,
-      tags: this.newTags,
+      title,
+      content: this.newContent(),
+      status: this.newStatus(),
+      priority: this.newPriority(),
+      tags: this.newTags(),
     });
-    console.log('Task added:', this.newTitle);
     this.clearForm();
   }
 
@@ -79,13 +77,12 @@ export class TaskAddComponent {
     const editingId = this.taskState.selectedTaskId();
     if (editingId !== null) {
       this.taskService.update(editingId, {
-        title: this.newTitle,
-        content: this.newContent,
-        status: this.newStatus,
-        priority: this.newPriority,
-        tags: this.newTags,
+        title: this.newTitle(),
+        content: this.newContent(),
+        status: this.newStatus(),
+        priority: this.newPriority(),
+        tags: this.newTags(),
       });
-      console.log('Task updated:', editingId);
       this.taskState.setSelectedTaskId(null);
       this.clearForm();
     }
@@ -97,26 +94,59 @@ export class TaskAddComponent {
   }
 
   clearForm() {
-    this.newTitle = '';
-    this.newContent = '';
-    this.newStatus = TaskStatus.Pending;
-    this.newPriority = TaskPriority.Medium;
-    this.newTags = [];
-    console.log('Form cleared');
+    this.newTitle.set('');
+    this.newContent.set('');
+    this.newStatus.set(TaskStatus.Pending);
+    this.newPriority.set(TaskPriority.Medium);
+    this.newTags.set([]);
   }
 
-  // Toggle tag selection
+  /**
+   * Toggle tag selection (immutable).
+   * Creates new array instead of mutating existing one.
+   */
   toggleTag(tag: TaskTags): void {
-    const index = this.newTags.indexOf(tag);
+    const currentTags = this.newTags();
+    const index = currentTags.indexOf(tag);
+
     if (index > -1) {
-      this.newTags.splice(index, 1);
+      // Remove tag - create new array without this tag (immutable)
+      this.newTags.set([
+        ...currentTags.slice(0, index),
+        ...currentTags.slice(index + 1)
+      ]);
     } else {
-      this.newTags.push(tag);
+      // Add tag - create new array with this tag (immutable)
+      this.newTags.set([...currentTags, tag]);
     }
   }
 
   // Check if a tag is selected
   isTagSelected(tag: TaskTags): boolean {
-    return this.newTags.includes(tag);
+    return this.newTags().includes(tag);
+  }
+
+  /**
+   * Event handlers for form inputs.
+   * Used for unidirectional data flow instead of ngModel.
+   */
+  onTitleInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newTitle.set(input.value);
+  }
+
+  onContentInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.newContent.set(textarea.value);
+  }
+
+  onStatusChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.newStatus.set(select.value as TaskStatus);
+  }
+
+  onPriorityChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.newPriority.set(select.value as TaskPriority);
   }
 }
