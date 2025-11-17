@@ -6,6 +6,7 @@ import { BalanceStateService } from '../../service/balanceState.service';
 import { Account, Balance, AccountType } from '../../balance-sheet.model';
 import { ACCOUNT_CATEGORY_LABELS } from '../../balance-sheet.constants';
 import { formatAbsoluteDate } from '../../../../shared/utils/date-formatter.util';
+import { isSameDay } from '../../balance-sheet.validation';
 
 interface AccountWithBalance {
   account: Account;
@@ -49,7 +50,7 @@ export class BalanceSheetViewComponent {
       // Find balance for this account at this date
       const balance = balances.find(b =>
         b.accountId === account.id &&
-        this.isSameDay(b.date, date)
+        isSameDay(b.date, date)
       );
 
       return {
@@ -106,15 +107,6 @@ export class BalanceSheetViewComponent {
     const date = new Date(dateString);
     this.selectedDate.set(date);
     this.selectedDateString.set(dateString);
-  }
-
-  // Helper: Check if two dates are the same day
-  private isSameDay(date1: Date, date2: Date): boolean {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
-    );
   }
 
   // Format currency

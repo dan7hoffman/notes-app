@@ -56,20 +56,30 @@ export class AccountFormComponent {
     }
   }
 
-  // Add new account
+  // Add new account with error handling
   addAccount(): void {
     if (!this.isFormValid()) {
+      alert('Please enter an account name');
       return;
     }
 
-    this.accountService.add({
-      name: this.accountName(),
-      type: this.accountType(),
-      category: this.accountCategory(),
-      description: this.description(),
-    });
+    try {
+      this.accountService.add({
+        name: this.accountName(),
+        type: this.accountType(),
+        category: this.accountCategory(),
+        description: this.description(),
+      });
 
-    this.clearForm();
+      this.clearForm();
+      alert('Account created successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(`Error creating account: ${error.message}`);
+      } else {
+        alert('An unknown error occurred while creating the account');
+      }
+    }
   }
 
   // Clear form fields

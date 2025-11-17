@@ -49,28 +49,39 @@ export class BalanceFormComponent {
     return `${year}-${month}-${day}`;
   }
 
-  // Add new balance entry
+  // Add new balance entry with error handling
   addBalance(): void {
     if (!this.isFormValid()) {
+      alert('Please fill in all required fields (account, amount, date)');
       return;
     }
 
     const accountId = this.selectedAccountId();
     if (accountId === null) {
+      alert('Please select an account');
       return;
     }
 
     // Convert date string to Date object (local timezone)
     const date = parseDateInputAsLocal(this.balanceDate());
 
-    this.balanceService.add({
-      accountId,
-      amount: this.amount(),
-      date,
-      note: this.note(),
-    });
+    try {
+      this.balanceService.add({
+        accountId,
+        amount: this.amount(),
+        date,
+        note: this.note(),
+      });
 
-    this.clearForm();
+      this.clearForm();
+      alert('Balance entry created successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(`Error creating balance: ${error.message}`);
+      } else {
+        alert('An unknown error occurred while creating the balance');
+      }
+    }
   }
 
   // Clear form fields
