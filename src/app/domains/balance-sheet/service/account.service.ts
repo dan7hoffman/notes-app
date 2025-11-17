@@ -2,15 +2,31 @@ import { Injectable } from '@angular/core';
 import { AccountRepository } from '../data/account.repository';
 import { Account, NewAccountData } from '../balance-sheet.model';
 import { AccountStateService } from './accountState.service';
+import { BalanceStateService } from './balanceState.service';
 import { LoggingService } from '../../logging/service/logging.service';
 import { LogLevel } from '../../logging/logging.model';
 import { DEFAULT_ACCOUNT_VALUES } from '../balance-sheet.constants';
+import { validateAccount } from '../balance-sheet.validation';
 
 export type AccountUpdateData = Partial<Omit<Account, 'id' | 'createdAt'>>;
 
 /**
+ * Custom error for when account has balances and cannot be deleted
+ */
+export class AccountHasBalancesError extends Error {
+  constructor(
+    public accountId: number,
+    public accountName: string,
+    public balanceCount: number
+  ) {
+    super(`Account "${accountName}" has ${balanceCount} balance entries that will be deleted`);
+    this.name = 'AccountHasBalancesError';
+  }
+}
+
+/**
  * Account Service
- * Orchestrates CRUD operations for accounts with logging
+ * Orchestrates CRUD operations for accounts with logging and validation
  */
 @Injectable({
   providedIn: 'root',
@@ -19,6 +35,7 @@ export class AccountService {
   constructor(
     private repo: AccountRepository,
     private accountState: AccountStateService,
+    private balanceState: BalanceStateService,
     private loggingService: LoggingService
   ) {
     // Initialize state from repository on service creation
@@ -43,18 +60,38 @@ export class AccountService {
 
   /**
    * Add a new account to the repository
+   * Throws error if validation fails
    */
   add(data: NewAccountData): Account {
+    // Validate account data
+    const validationResult = validateAccount({
+      name: data.name,
+      type: data.type,
+      category: data.category,
+      description: data.description,
+    });
+
+    if (!validationResult.isValid) {
+      const error = `Validation failed: ${validationResult.errors.join(', ')}`;
+      this.loggingService.add({
+        level: LogLevel.Error,
+        message: error,
+        context: 'AccountService.add',
+        data: { errors: validationResult.errors }
+      });
+      throw new Error(error);
+    }
+
     const now = new Date();
-    const id = Date.now();
+    const id = Date.now() + Math.floor(Math.random() * 1000); // Prevent collision
 
     // Create new account object (immutable)
     const newAccount: Account = {
       id,
-      name: data.name,
+      name: data.name.trim(),
       type: data.type,
       category: data.category,
-      description: data.description || DEFAULT_ACCOUNT_VALUES.DESCRIPTION,
+      description: data.description?.trim() || DEFAULT_ACCOUNT_VALUES.DESCRIPTION,
       createdAt: now,
       lastModifiedAt: now,
       deleted: DEFAULT_ACCOUNT_VALUES.DELETED,
@@ -84,29 +121,54 @@ export class AccountService {
 
   /**
    * Update an existing account in the repository
+   * Throws error if validation fails
    */
   update(id: number, updates: AccountUpdateData): void {
     const currentAccounts = this.repo.getAll();
     const targetIndex = currentAccounts.findIndex((a) => a.id === id);
 
     if (targetIndex === -1) {
-      // Log error when account not found
+      const error = `Cannot update: Account ID ${id} does not exist`;
       this.loggingService.add({
         level: LogLevel.Error,
-        message: 'Attempted to update non-existent account',
+        message: error,
         context: 'AccountService.update',
         data: { accountId: id, updates }
       });
-      return;
+      throw new Error(error);
     }
 
     const currentAccount = currentAccounts[targetIndex];
+
+    // Merge updates with current account for validation
+    const mergedAccount = {
+      name: updates.name?.trim() ?? currentAccount.name,
+      type: updates.type ?? currentAccount.type,
+      category: updates.category ?? currentAccount.category,
+      description: updates.description?.trim() ?? currentAccount.description,
+    };
+
+    // Validate updated data
+    const validationResult = validateAccount(mergedAccount);
+    if (!validationResult.isValid) {
+      const error = `Validation failed: ${validationResult.errors.join(', ')}`;
+      this.loggingService.add({
+        level: LogLevel.Error,
+        message: error,
+        context: 'AccountService.update',
+        data: { accountId: id, errors: validationResult.errors }
+      });
+      throw new Error(error);
+    }
+
     const now = new Date();
 
     // Create new account object with updates (immutable)
     const updatedAccount: Account = {
       ...currentAccount,
       ...updates,
+      name: mergedAccount.name,
+      description: mergedAccount.description,
       lastModifiedAt: now,
     };
 
@@ -120,12 +182,12 @@ export class AccountService {
     this.repo.saveAll(updatedAccounts);
     this.accountState.setAccounts(updatedAccounts);
 
-    // Log account update operation (only the changes)
+    // Log account update operation
     this.loggingService.add({
       level: LogLevel.Information,
       message: 'Account updated',
       context: 'AccountService.update',
-      data: { accountId: id, updates }
+      data: { accountId: id, accountName: updatedAccount.name, updates }
     });
   }
 
@@ -178,11 +240,48 @@ export class AccountService {
   }
 
   /**
+   * Get count of balances for an account
+   */
+  getBalanceCount(accountId: number): number {
+    const balances = this.balanceState.balances();
+    return balances.filter(b => b.accountId === accountId).length;
+  }
+
+  /**
    * Permanently delete an account from the repository
+   * Throws AccountHasBalancesError if account has balance entries
+   * Throws error if account not found
    */
   delete(id: number): void {
     const currentAccounts = this.repo.getAll();
     const accountToDelete = currentAccounts.find((a) => a.id === id);
+
+    if (!accountToDelete) {
+      const error = `Cannot delete: Account ID ${id} does not exist`;
+      this.loggingService.add({
+        level: LogLevel.Error,
+        message: error,
+        context: 'AccountService.delete',
+        data: { accountId: id }
+      });
+      throw new Error(error);
+    }
+
+    // Check if account has balances
+    const balanceCount = this.getBalanceCount(id);
+    if (balanceCount > 0) {
+      this.loggingService.add({
+        level: LogLevel.Warning,
+        message: 'Cannot delete account with balances',
+        context: 'AccountService.delete',
+        data: {
+          accountId: id,
+          accountName: accountToDelete.name,
+          balanceCount
+        }
+      });
+      throw new AccountHasBalancesError(id, accountToDelete.name, balanceCount);
+    }
 
     // Filter creates a new array (immutable)
     const filteredAccounts = currentAccounts.filter((a) => a.id !== id);
@@ -190,13 +289,11 @@ export class AccountService {
     this.accountState.setAccounts(filteredAccounts);
 
     // Log permanent deletion
-    if (accountToDelete) {
-      this.loggingService.add({
-        level: LogLevel.Warning,
-        message: 'Account permanently deleted',
-        context: 'AccountService.delete',
-        data: { accountId: id, accountName: accountToDelete.name }
-      });
-    }
+    this.loggingService.add({
+      level: LogLevel.Warning,
+      message: 'Account permanently deleted',
+      context: 'AccountService.delete',
+      data: { accountId: id, accountName: accountToDelete.name }
+    });
   }
 }

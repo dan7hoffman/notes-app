@@ -65,18 +65,27 @@ export class BalanceHistoryComponent {
     this.editNote.set(balance.note ?? '');
   }
 
-  // Save edited balance
+  // Save edited balance with error handling
   saveEdit(): void {
     const id = this.editingBalanceId();
     if (id === null) return;
 
-    this.balanceService.update(id, {
-      amount: this.editAmount(),
-      date: parseDateInputAsLocal(this.editDate()),
-      note: this.editNote(),
-    });
+    try {
+      this.balanceService.update(id, {
+        amount: this.editAmount(),
+        date: parseDateInputAsLocal(this.editDate()),
+        note: this.editNote(),
+      });
 
-    this.cancelEdit();
+      this.cancelEdit();
+      alert('Balance updated successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(`Error updating balance: ${error.message}`);
+      } else {
+        alert('An unknown error occurred while updating the balance');
+      }
+    }
   }
 
   // Cancel editing
@@ -87,10 +96,19 @@ export class BalanceHistoryComponent {
     this.editNote.set('');
   }
 
-  // Delete balance
+  // Delete balance with error handling
   deleteBalance(id: number): void {
     if (confirm('Are you sure you want to delete this balance entry?')) {
-      this.balanceService.delete(id);
+      try {
+        this.balanceService.delete(id);
+        alert('Balance deleted successfully');
+      } catch (error) {
+        if (error instanceof Error) {
+          alert(`Error deleting balance: ${error.message}`);
+        } else {
+          alert('An unknown error occurred while deleting the balance');
+        }
+      }
     }
   }
 
