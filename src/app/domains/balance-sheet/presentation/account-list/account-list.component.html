@@ -1,0 +1,93 @@
+<div class="account-list-container">
+  <!-- Assets Section -->
+  <section class="account-section">
+    <h2 class="section-header asset-header">
+      <span>Assets</span>
+      <span class="count-badge">{{ assetAccounts().length }}</span>
+    </h2>
+
+    @if (assetAccounts().length === 0) {
+      <p class="empty-state">No asset accounts yet. Add one above!</p>
+    } @else {
+      <div class="accounts-grid">
+        @for (account of assetAccounts(); track account.id) {
+          <div class="account-card asset-card">
+            <div class="account-header">
+              <h3 class="account-name">{{ account.name }}</h3>
+              <span class="account-category">
+                {{ ACCOUNT_CATEGORY_LABELS[account.category] }}
+              </span>
+            </div>
+
+            @if (account.description) {
+              <p class="account-description">{{ account.description }}</p>
+            }
+
+            <div class="account-meta">
+              <span class="meta-item">
+                Created: {{ formatAbsoluteDateTime(account.createdAt) }}
+              </span>
+              @if (account.lastModifiedAt.getTime() !== account.createdAt.getTime()) {
+                <span class="meta-item">
+                  Modified: {{ formatAbsoluteDateTime(account.lastModifiedAt) }}
+                </span>
+              }
+            </div>
+
+            <div class="account-actions">
+              <button class="btn-delete" (click)="deleteAccount(account.id)">
+                Delete
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Liabilities Section -->
+  <section class="account-section">
+    <h2 class="section-header liability-header">
+      <span>Liabilities</span>
+      <span class="count-badge">{{ liabilityAccounts().length }}</span>
+    </h2>
+
+    @if (liabilityAccounts().length === 0) {
+      <p class="empty-state">No liability accounts yet. Add one above!</p>
+    } @else {
+      <div class="accounts-grid">
+        @for (account of liabilityAccounts(); track account.id) {
+          <div class="account-card liability-card">
+            <div class="account-header">
+              <h3 class="account-name">{{ account.name }}</h3>
+              <span class="account-category">
+                {{ ACCOUNT_CATEGORY_LABELS[account.category] }}
+              </span>
+            </div>
+
+            @if (account.description) {
+              <p class="account-description">{{ account.description }}</p>
+            }
+
+            <div class="account-meta">
+              <span class="meta-item">
+                Created: {{ formatAbsoluteDateTime(account.createdAt) }}
+              </span>
+              @if (account.lastModifiedAt.getTime() !== account.createdAt.getTime()) {
+                <span class="meta-item">
+                  Modified: {{ formatAbsoluteDateTime(account.lastModifiedAt) }}
+                </span>
+              }
+            </div>
+
+            <div class="account-actions">
+              <button class="btn-delete" (click)="deleteAccount(account.id)">
+                Delete
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

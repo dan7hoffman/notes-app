@@ -42,8 +42,8 @@
   }
 
     // For creating new accounts/balances
-  export type NewAccountData = Omit<Account, 'id' | 'createdAt' | 'deleted' | 'deletionAt'>;
-  export type NewBalanceData = Omit<Balance, 'id' | 'createdAt'>;
+  export type NewAccountData = Omit<Account, 'id' | 'createdAt' | 'lastModifiedAt' | 'deleted' | 'deletionAt'>;
+  export type NewBalanceData = Omit<Balance, 'id' | 'createdAt' | 'lastModifiedAt'>;
 
   // For balance sheet calculations
   export interface BalanceSheetSnapshot {

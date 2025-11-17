@@ -1,0 +1,57 @@
+.balance-sheet-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.balance-sheet-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+}
+
+.metrics {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.metric-card {
+  background: #f5f5f5;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #666;
+  min-width: 150px;
+
+  &.asset {
+    border-left-color: #4CAF50;
+    background: #E8F5E9;
+  }
+
+  &.liability {
+    border-left-color: #F44336;
+    background: #FFEBEE;
+  }
+
+  .metric-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+
+  .metric-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.balance-sheet-content {
+  display: grid;
+  gap: 2rem;
+}

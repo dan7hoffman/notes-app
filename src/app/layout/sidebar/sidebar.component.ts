@@ -18,6 +18,7 @@ export class SidebarComponent {
   navItems: NavItem[] = [
     { path: '/notes', label: 'Notes' },
     { path: '/tasks', label: 'Tasks' },
+    { path: '/balance-sheet', label: 'Balance Sheet' },
     { path: '/logging', label: 'Logging'}
   ];
 }
