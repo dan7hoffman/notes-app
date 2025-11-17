@@ -1,0 +1,105 @@
+<div class="balance-sheet-view-container">
+  <h2>Balance Sheet View</h2>
+
+  <!-- Date Selection -->
+  <div class="date-selector">
+    <label for="periodSelect">Select Period:</label>
+    <select
+      id="periodSelect"
+      [value]="selectedDateString()"
+      (change)="onDateSelect($event)"
+    >
+      <option value="">-- Select a date --</option>
+      @for (period of availablePeriods(); track period.getTime()) {
+        <option [value]="period.toISOString()">
+          {{ formatAbsoluteDate(period) }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <!-- Balance Sheet Display -->
+  @if (selectedDate()) {
+    <div class="balance-sheet">
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card assets">
+          <span class="label">Total Assets</span>
+          <span class="value">{{ formatCurrency(totalAssets()) }}</span>
+        </div>
+        <div class="summary-card liabilities">
+          <span class="label">Total Liabilities</span>
+          <span class="value">{{ formatCurrency(totalLiabilities()) }}</span>
+        </div>
+        <div class="summary-card net-worth" [class.negative]="netWorth() < 0">
+          <span class="label">Net Worth</span>
+          <span class="value">{{ formatCurrency(netWorth()) }}</span>
+        </div>
+      </div>
+
+      <!-- Assets Section -->
+      <section class="account-section">
+        <h3 class="section-header assets-header">Assets</h3>
+
+        @if (assetAccountsWithBalances().length === 0) {
+          <p class="empty-state">No asset accounts</p>
+        } @else {
+          <div class="accounts-table">
+            <div class="table-header">
+              <span class="col-account">Account</span>
+              <span class="col-category">Category</span>
+              <span class="col-amount">Amount</span>
+            </div>
+            @for (item of assetAccountsWithBalances(); track item.account.id) {
+              <div class="table-row">
+                <span class="col-account">{{ item.account.name }}</span>
+                <span class="col-category">{{ ACCOUNT_CATEGORY_LABELS[item.account.category] }}</span>
+                <span class="col-amount" [class.zero]="item.amount === 0">
+                  {{ formatCurrency(item.amount) }}
+                </span>
+              </div>
+            }
+            <div class="table-footer">
+              <span class="col-account"></span>
+              <span class="col-category">Total Assets</span>
+              <span class="col-amount total">{{ formatCurrency(totalAssets()) }}</span>
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- Liabilities Section -->
+      <section class="account-section">
+        <h3 class="section-header liabilities-header">Liabilities</h3>
+
+        @if (liabilityAccountsWithBalances().length === 0) {
+          <p class="empty-state">No liability accounts</p>
+        } @else {
+          <div class="accounts-table">
+            <div class="table-header">
+              <span class="col-account">Account</span>
+              <span class="col-category">Category</span>
+              <span class="col-amount">Amount</span>
+            </div>
+            @for (item of liabilityAccountsWithBalances(); track item.account.id) {
+              <div class="table-row">
+                <span class="col-account">{{ item.account.name }}</span>
+                <span class="col-category">{{ ACCOUNT_CATEGORY_LABELS[item.account.category] }}</span>
+                <span class="col-amount" [class.zero]="item.amount === 0">
+                  {{ formatCurrency(item.amount) }}
+                </span>
+              </div>
+            }
+            <div class="table-footer">
+              <span class="col-account"></span>
+              <span class="col-category">Total Liabilities</span>
+              <span class="col-amount total">{{ formatCurrency(totalLiabilities()) }}</span>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  } @else {
+    <p class="empty-state">Select a date to view the balance sheet</p>
+  }
+</div>

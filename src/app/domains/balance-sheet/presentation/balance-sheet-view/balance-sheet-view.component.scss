@@ -1,0 +1,222 @@
+.balance-sheet-view-container {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.25rem;
+  }
+}
+
+.date-selector {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  label {
+    font-weight: 500;
+    color: #555;
+  }
+
+  select {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-width: 200px;
+
+    &:focus {
+      outline: none;
+      border-color: #2196F3;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-style: italic;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.balance-sheet {
+  display: grid;
+  gap: 2rem;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #666;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &.assets {
+    border-left-color: #4CAF50;
+    background: #E8F5E9;
+  }
+
+  &.liabilities {
+    border-left-color: #F44336;
+    background: #FFEBEE;
+  }
+
+  &.net-worth {
+    border-left-color: #2196F3;
+    background: #E3F2FD;
+
+    &.negative {
+      border-left-color: #FF9800;
+      background: #FFF3E0;
+    }
+  }
+
+  .label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .value {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.account-section {
+  .section-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid;
+    font-size: 1.1rem;
+
+    &.assets-header {
+      border-bottom-color: #4CAF50;
+      color: #2E7D32;
+    }
+
+    &.liabilities-header {
+      border-bottom-color: #F44336;
+      color: #C62828;
+    }
+  }
+}
+
+.accounts-table {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+
+  .table-header,
+  .table-row,
+  .table-footer {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    align-items: center;
+  }
+
+  .table-header {
+    background: #f5f5f5;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .table-row {
+    border-bottom: 1px solid #f0f0f0;
+
+    &:hover {
+      background: #fafafa;
+    }
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  .table-footer {
+    background: #f9f9f9;
+    font-weight: 600;
+    border-top: 2px solid #ddd;
+  }
+
+  .col-account {
+    text-align: left;
+  }
+
+  .col-category {
+    text-align: left;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .col-amount {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+
+    &.zero {
+      color: #999;
+    }
+
+    &.total {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .date-selector {
+    flex-direction: column;
+    align-items: flex-start;
+
+    select {
+      width: 100%;
+    }
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .accounts-table {
+    .table-header,
+    .table-row,
+    .table-footer {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+
+    .col-category,
+    .col-amount {
+      font-size: 0.85rem;
+    }
+
+    .col-amount {
+      text-align: left;
+    }
+  }
+}
