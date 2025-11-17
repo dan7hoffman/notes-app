@@ -9,16 +9,21 @@
                 <div class="log-entry" [class]="'log-' + log.level">
                     <div class="log-header">
                         <span class="log-level">{{ log.level }}</span>
-                        <span class="log-timestamp">{{ log.timeStamp | date:'short' }}</span>
+                        <span class="log-timestamp">{{ formatAbsoluteDateTime(log.timeStamp) }}</span>
                     </div>
                     <div class="log-message">{{ log.message }}</div>
                     @if (log.context) {
                         <div class="log-context">Context: {{ log.context }}</div>
                     }
                     @if (log.data) {
-                        <div class="log-data">
-                            <pre>{{ log.data | json }}</pre>
-                        </div>
+                        <button (click)="toggleExpand(log.id)">
+                            {{ isExpanded(log.id) ? 'Collapse' : 'Expand' }} Data
+                        </button>
+                        @if (isExpanded(log.id)) {
+                            <div class="log-data">
+                                <pre>{{ log.data | json }}</pre>
+                            </div>
+                        }
                     }
                 </div>
             }
