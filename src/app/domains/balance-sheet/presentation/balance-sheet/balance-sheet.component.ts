@@ -3,6 +3,7 @@ import { AccountFormComponent } from '../account-form/account-form.component';
 import { AccountListComponent } from '../account-list/account-list.component';
 import { BalanceFormComponent } from '../balance-form/balance-form.component';
 import { BalanceSheetViewComponent } from '../balance-sheet-view/balance-sheet-view.component';
+import { BalanceHistoryComponent } from '../balance-history/balance-history.component';
 import { AccountStateService } from '../../service/accountState.service';
 import { AccountService } from '../../service/account.service';
 import { BalanceService } from '../../service/balance.service';
@@ -14,7 +15,7 @@ import { BalanceService } from '../../service/balance.service';
 @Component({
   selector: 'app-balance-sheet',
   standalone: true,
-  imports: [AccountFormComponent, AccountListComponent, BalanceFormComponent, BalanceSheetViewComponent],
+  imports: [AccountFormComponent, AccountListComponent, BalanceFormComponent, BalanceSheetViewComponent, BalanceHistoryComponent],
   templateUrl: './balance-sheet.component.html',
   styleUrls: ['./balance-sheet.component.scss'],
 })

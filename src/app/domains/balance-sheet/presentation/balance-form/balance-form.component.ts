@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BalanceService } from '../../service/balance.service';
 import { AccountStateService } from '../../service/accountState.service';
+import { parseDateInputAsLocal } from '../../../../shared/utils/date-formatter.util';
 
 /**
  * Balance Form Component
@@ -59,8 +60,8 @@ export class BalanceFormComponent {
       return;
     }
 
-    // Convert date string to Date object
-    const date = new Date(this.balanceDate());
+    // Convert date string to Date object (local timezone)
+    const date = parseDateInputAsLocal(this.balanceDate());
 
     this.balanceService.add({
       accountId,

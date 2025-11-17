@@ -1,0 +1,104 @@
+<div class="balance-history-container">
+  <h2>Balance History</h2>
+
+  <!-- Filter -->
+  <div class="filter-section">
+    <label for="accountFilter">Filter by Account:</label>
+    <select
+      id="accountFilter"
+      [value]="selectedAccountFilter() ?? ''"
+      (change)="selectedAccountFilter.set($any($event.target).value ? +$any($event.target).value : null)"
+    >
+      <option value="">All Accounts</option>
+      @for (account of activeAccounts(); track account.id) {
+        <option [value]="account.id">{{ account.name }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Balance Entries -->
+  @if (filteredBalances().length === 0) {
+    <p class="empty-state">No balance entries found.</p>
+  } @else {
+    <div class="balance-list">
+      @for (balance of filteredBalances(); track balance.id) {
+        <div class="balance-entry">
+          @if (isEditing(balance.id)) {
+            <!-- Edit Mode -->
+            <div class="edit-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Account</label>
+                  <span class="readonly-field">{{ getAccountName(balance.accountId) }}</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="editAmount">Amount</label>
+                  <input
+                    id="editAmount"
+                    type="number"
+                    step="0.01"
+                    [value]="editAmount()"
+                    (input)="editAmount.set(+$any($event.target).value)"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="editDate">Date</label>
+                  <input
+                    id="editDate"
+                    type="date"
+                    [value]="editDate()"
+                    (input)="editDate.set($any($event.target).value)"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="editNote">Note</label>
+                <textarea
+                  id="editNote"
+                  [value]="editNote()"
+                  (input)="editNote.set($any($event.target).value)"
+                  rows="2"
+                ></textarea>
+              </div>
+
+              <div class="edit-actions">
+                <button class="btn-save" (click)="saveEdit()">Save</button>
+                <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+              </div>
+            </div>
+          } @else {
+            <!-- Display Mode -->
+            <div class="balance-details">
+              <div class="balance-header">
+                <span class="account-name">{{ getAccountName(balance.accountId) }}</span>
+                <span class="balance-amount">{{ formatCurrency(balance.amount) }}</span>
+              </div>
+
+              <div class="balance-meta">
+                <span class="meta-item">Date: {{ formatAbsoluteDateTime(balance.date) }}</span>
+                <span class="meta-item">Created: {{ formatAbsoluteDateTime(balance.createdAt) }}</span>
+                @if (balance.lastModifiedAt.getTime() !== balance.createdAt.getTime()) {
+                  <span class="meta-item">Modified: {{ formatAbsoluteDateTime(balance.lastModifiedAt) }}</span>
+                }
+              </div>
+
+              @if (balance.note) {
+                <div class="balance-note">
+                  <strong>Note:</strong> {{ balance.note }}
+                </div>
+              }
+
+              <div class="balance-actions">
+                <button class="btn-edit" (click)="startEdit(balance)">Edit</button>
+                <button class="btn-delete" (click)="deleteBalance(balance.id)">Delete</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

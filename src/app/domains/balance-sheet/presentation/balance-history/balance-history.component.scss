@@ -1,0 +1,256 @@
+.balance-history-container {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.25rem;
+  }
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  label {
+    font-weight: 500;
+    color: #555;
+  }
+
+  select {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-width: 200px;
+
+    &:focus {
+      outline: none;
+      border-color: #2196F3;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-style: italic;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.balance-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.balance-entry {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: #fff;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.balance-details {
+  .balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+
+    .account-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    .balance-amount {
+      font-size: 1.25rem;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      color: #2196F3;
+    }
+  }
+
+  .balance-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f0f0f0;
+
+    .meta-item {
+      font-size: 0.85rem;
+      color: #999;
+    }
+  }
+
+  .balance-note {
+    background: #f9f9f9;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #555;
+
+    strong {
+      color: #333;
+    }
+  }
+
+  .balance-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.btn-edit {
+        background: #2196F3;
+        color: white;
+
+        &:hover {
+          background: #1976D2;
+        }
+      }
+
+      &.btn-delete {
+        background: #fff;
+        color: #F44336;
+        border: 1px solid #F44336;
+
+        &:hover {
+          background: #F44336;
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+.edit-form {
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    input,
+    textarea {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: #2196F3;
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .readonly-field {
+      padding: 0.75rem;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      color: #666;
+    }
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.btn-save {
+        background: #4CAF50;
+        color: white;
+
+        &:hover {
+          background: #388E3C;
+        }
+      }
+
+      &.btn-cancel {
+        background: #f5f5f5;
+        color: #666;
+
+        &:hover {
+          background: #e0e0e0;
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .filter-section {
+    flex-direction: column;
+    align-items: flex-start;
+
+    select {
+      width: 100%;
+    }
+  }
+
+  .balance-details {
+    .balance-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+
+  .edit-form {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+}
