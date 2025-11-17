@@ -188,18 +188,45 @@
 }
 
 // Responsive
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .balance-sheet-view-container {
+    padding: 1rem;
+
+    h2 {
+      font-size: 1.15rem;
+    }
+  }
+
   .date-selector {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.5rem;
 
     select {
       width: 100%;
+      min-width: 0;
     }
   }
 
   .summary-cards {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .summary-card {
+    padding: 1.25rem;
+
+    .label {
+      font-size: 0.85rem;
+    }
+
+    .value {
+      font-size: 1.5rem;
+    }
+  }
+
+  .account-section .section-header {
+    font-size: 1rem;
   }
 
   .accounts-table {
@@ -208,15 +235,67 @@
     .table-footer {
       grid-template-columns: 1fr;
       gap: 0.25rem;
+      padding: 0.625rem 0.875rem;
+    }
+
+    .table-header {
+      font-size: 0.8rem;
+    }
+
+    .col-account {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .col-category {
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      color: #888;
+    }
+
+    .col-amount {
+      font-size: 0.95rem;
+      text-align: left;
+      margin-left: 0.5rem;
+
+      &.total {
+        font-size: 1.05rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 375px) {
+  .balance-sheet-view-container {
+    padding: 0.75rem;
+
+    h2 {
+      font-size: 1.1rem;
+    }
+  }
+
+  .summary-card {
+    padding: 1rem;
+
+    .value {
+      font-size: 1.35rem;
+    }
+  }
+
+  .accounts-table {
+    .table-header,
+    .table-row,
+    .table-footer {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .col-account {
+      font-size: 0.9rem;
     }
 
     .col-category,
     .col-amount {
       font-size: 0.85rem;
-    }
-
-    .col-amount {
-      text-align: left;
     }
   }
 }

@@ -140,8 +140,62 @@
 }
 
 // Responsive
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .account-list-container {
+    padding: 0;
+  }
+
   .accounts-grid {
     grid-template-columns: 1fr;
+  }
+
+  .account-card {
+    padding: 1rem;
+
+    .account-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      .account-name {
+        font-size: 1rem;
+      }
+    }
+
+    .account-meta {
+      .meta-item {
+        font-size: 0.75rem;
+      }
+    }
+
+    .account-actions {
+      button {
+        flex: 1;
+        min-height: 44px;  // Touch-friendly tap target
+        padding: 0.625rem 1rem;
+
+        &.btn-delete {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+
+  .section-header {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .account-card {
+    padding: 0.875rem;
+
+    .account-header .account-name {
+      font-size: 0.95rem;
+    }
+
+    .account-description {
+      font-size: 0.85rem;
+    }
   }
 }
