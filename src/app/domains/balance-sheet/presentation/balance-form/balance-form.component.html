@@ -1,0 +1,75 @@
+<div class="balance-form-container">
+  <h2>Add Balance Entry</h2>
+
+  @if (activeAccounts().length === 0) {
+    <p class="empty-state">Please create an account first before adding balances.</p>
+  } @else {
+    <form class="balance-form" (submit)="addBalance(); $event.preventDefault()">
+      <!-- Account Selection -->
+      <div class="form-group">
+        <label for="accountId">Account *</label>
+        <select
+          id="accountId"
+          [value]="selectedAccountId() ?? ''"
+          (change)="selectedAccountId.set($any($event.target).value ? +$any($event.target).value : null)"
+          required
+        >
+          <option value="">-- Select Account --</option>
+          @for (account of activeAccounts(); track account.id) {
+            <option [value]="account.id">
+              {{ account.name }} ({{ account.type }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- Amount -->
+      <div class="form-group">
+        <label for="amount">Amount *</label>
+        <input
+          id="amount"
+          type="number"
+          step="0.01"
+          [value]="amount()"
+          (input)="amount.set(+$any($event.target).value)"
+          placeholder="0.00"
+          required
+        />
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label for="balanceDate">Date *</label>
+        <input
+          id="balanceDate"
+          type="date"
+          [value]="balanceDate()"
+          (input)="balanceDate.set($any($event.target).value)"
+          required
+        />
+      </div>
+
+      <!-- Note -->
+      <div class="form-group">
+        <label for="note">Note (optional)</label>
+        <textarea
+          id="note"
+          [value]="note()"
+          (input)="note.set($any($event.target).value)"
+          placeholder="Any additional context..."
+          rows="2"
+        ></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!isFormValid()">
+          Add Balance
+        </button>
+        <button type="button" class="btn-secondary" (click)="clearForm()">
+          Clear
+        </button>
+      </div>
+    </form>
+  }
+</div>
