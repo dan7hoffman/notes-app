@@ -230,14 +230,27 @@
 }
 
 // Responsive
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .balance-history-container {
+    padding: 1rem;
+
+    h2 {
+      font-size: 1.15rem;
+    }
+  }
+
   .filter-section {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.5rem;
 
     select {
       width: 100%;
     }
+  }
+
+  .balance-entry {
+    padding: 1rem;
   }
 
   .balance-details {
@@ -245,6 +258,34 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 0.5rem;
+
+      .account-name {
+        font-size: 1rem;
+      }
+
+      .balance-amount {
+        font-size: 1.15rem;
+      }
+    }
+
+    .balance-meta {
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .meta-item {
+        font-size: 0.8rem;
+      }
+    }
+
+    .balance-actions {
+      flex-wrap: wrap;
+
+      button {
+        flex: 1;
+        min-height: 44px;  // Touch-friendly tap target
+        padding: 0.625rem 1rem;
+        font-size: 0.85rem;
+      }
     }
   }
 
@@ -252,5 +293,33 @@
     .form-row {
       grid-template-columns: 1fr;
     }
+
+    .edit-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+        min-height: 44px;  // Touch-friendly tap target
+      }
+    }
+  }
+}
+
+@media (max-width: 375px) {
+  .balance-history-container {
+    padding: 0.75rem;
+
+    h2 {
+      font-size: 1.1rem;
+    }
+  }
+
+  .balance-entry {
+    padding: 0.875rem;
+  }
+
+  .balance-details .balance-note {
+    font-size: 0.85rem;
+    padding: 0.625rem;
   }
 }

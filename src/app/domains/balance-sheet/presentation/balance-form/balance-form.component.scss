@@ -111,6 +111,26 @@ button {
 }
 
 // Responsive
+@media (max-width: 767px) {
+  .balance-form-container {
+    padding: 1rem;
+  }
+
+  button {
+    min-height: 44px;  // Touch-friendly tap target
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;  // Full width buttons on mobile
+    }
+  }
+}
+
 @media (min-width: 768px) {
   .balance-form {
     grid-template-columns: 1fr 1fr;
@@ -119,6 +139,17 @@ button {
     .form-group:nth-child(4),
     .form-actions {
       grid-column: 1 / -1;
+    }
+  }
+}
+
+// Small mobile devices
+@media (max-width: 375px) {
+  .balance-form-container {
+    padding: 0.75rem;
+
+    h2 {
+      font-size: 1.1rem;
     }
   }
 }
