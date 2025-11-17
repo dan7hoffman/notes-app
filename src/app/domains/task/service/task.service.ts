@@ -10,6 +10,8 @@ import {
 import { TaskStateService } from './taskState.service';
 import { TaskHistoryService } from './taskHistory.service';
 import { DEFAULT_TASK_VALUES } from '../task.constants';
+import { LoggingService } from '../../logging/service/logging.service';
+import { LogLevel } from '../../logging/logging.model';
 
 /**
  * Service that acts as a bridge between components and TaskRepository,
@@ -38,13 +40,23 @@ export class TaskService {
   constructor(
     private repo: TaskRepository,
     private taskState: TaskStateService,
-    private historyService: TaskHistoryService
+    private historyService: TaskHistoryService,
+    private loggingService: LoggingService
   ) {}
 
   // Retrieve all tasks from repository and update state
   getTasks(): Task[] {
     const tasks = this.repo.getAll();
     this.taskState.setTasks(tasks);
+
+    // // Log task load operation
+    // this.loggingService.add({
+    //   level: LogLevel.Information,
+    //   message: 'Tasks loaded from repository',
+    //   context: 'TaskService.getTasks',
+    //   data: { taskCount: tasks.length }
+    // });
+
     return tasks;
   }
 
@@ -85,6 +97,14 @@ export class TaskService {
     this.repo.saveAll(tasks);
     this.taskState.setTasks(tasks);
 
+        // Log task CREATE operation
+    this.loggingService.add({
+      level: LogLevel.Information,
+      message: 'Tasks created',
+      context: 'TaskService.add',
+      data: { newTask }
+    });
+
     return newTask;
   }
 
@@ -97,7 +117,16 @@ export class TaskService {
     const currentTasks = this.repo.getAll();
     const targetIndex = currentTasks.findIndex((t) => t.id === id);
 
-    if (targetIndex === -1) return;
+    if (targetIndex === -1) {
+      // Log error when task not found
+      this.loggingService.add({
+        level: LogLevel.Error,
+        message: 'Attempted to update non-existent task',
+        context: 'TaskService.update',
+        data: { taskId: id, updates }
+      });
+      return;
+    }
 
     const currentTask = currentTasks[targetIndex];
     const now = new Date();
@@ -128,6 +157,14 @@ export class TaskService {
 
     this.repo.saveAll(updatedTasks);
     this.taskState.setTasks(updatedTasks);
+
+    // Log task update operation (only the changes)
+    this.loggingService.add({
+      level: LogLevel.Information,
+      message: 'Task updated',
+      context: 'TaskService.update',
+      data: { taskId: id, updates }
+    });
   }
 
   /**
@@ -139,7 +176,16 @@ export class TaskService {
     const currentTasks = this.repo.getAll();
     const targetIndex = currentTasks.findIndex((t) => t.id === id);
 
-    if (targetIndex === -1) return;
+    if (targetIndex === -1) {
+      // Log error when task not found
+      this.loggingService.add({
+        level: LogLevel.Error,
+        message: 'Attempted to soft delete non-existent task',
+        context: 'TaskService.softDelete',
+        data: { taskId: id }
+      });
+      return;
+    }
 
     const currentTask = currentTasks[targetIndex];
     const now = new Date();
@@ -168,6 +214,14 @@ export class TaskService {
 
     this.repo.saveAll(updatedTasks);
     this.taskState.setTasks(updatedTasks);
+
+    // Log soft delete operation
+    this.loggingService.add({
+      level: LogLevel.Warning,
+      message: 'Task soft deleted',
+      context: 'TaskService.softDelete',
+      data: { taskId: id, taskTitle: currentTask.title }
+    });
   }
 
   /**
@@ -176,10 +230,22 @@ export class TaskService {
    */
   delete(id: number): void {
     const currentTasks = this.repo.getAll();
+    const taskToDelete = currentTasks.find((t) => t.id === id);
+
     // Filter creates a new array (immutable)
     const filteredTasks = currentTasks.filter((t) => t.id !== id);
     this.repo.saveAll(filteredTasks);
     this.taskState.setTasks(filteredTasks);
+
+    // Log permanent deletion
+    if (taskToDelete) {
+      this.loggingService.add({
+        level: LogLevel.Warning,
+        message: 'Task permanently deleted',
+        context: 'TaskService.delete',
+        data: { taskId: id, taskTitle: taskToDelete.title }
+      });
+    }
   }
 
   /**

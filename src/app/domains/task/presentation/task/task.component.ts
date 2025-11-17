@@ -3,6 +3,7 @@ import { TaskListComponent } from '../task-list/task-list.component';
 import { TaskAddComponent } from '../task-add/task-add.component';
 import { TaskStateService } from '../../service/taskState.service';
 import { TaskKanbanComponent } from '../task-kanban/task-kanban.component';
+import { TaskService } from '../../service/task.service';
 
 @Component({
   selector: 'app-tasks',
@@ -21,5 +22,13 @@ export class TaskComponent {
   inProgressRate = this.taskState.inProgressRate;
   averageCompletionTime = this.taskState.averageCompletionTime;
 
-  constructor(private taskState: TaskStateService) {}
+  constructor(
+    private taskState: TaskStateService,
+    private taskService: TaskService
+  ) {}
+
+  ngOnInit(): void {
+    // Load tasks once at the parent level
+    this.taskService.getTasks();
+  }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, Injectable } from "@angular/core";
+import { Component } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { LoggingService } from "../../service/logging.service";
 
@@ -11,14 +11,10 @@ import { LoggingService } from "../../service/logging.service";
     styleUrls: ['./logging-list.component.scss'],
 })
 export class LoggingListComponent {
+    // Access logs directly from the service signal
+    logs = this.loggingService.logs;
+
     constructor(
         private loggingService: LoggingService,
     ){}
-    
-    ngOnInit():void{
-        this.loggingService.getSystemLogging();
-    }
-
-    systemLogging = this.loggingService.getSystemLogging();
-
 }

@@ -1,12 +1,12 @@
-export enum loggingLevel {
+export enum LogLevel {
   Information = 'info',
   Warning = 'warn',
   Error = 'error',
 }
 
-export interface SystemLogging {
-    id: string;
-    level: loggingLevel;
+export interface Log {
+    id: number;
+    level: LogLevel;
     message: string;
     context?: string;
     data?: any;

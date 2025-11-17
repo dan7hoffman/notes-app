@@ -20,9 +20,7 @@ export class TaskListComponent {
     private taskState: TaskStateService
   ) {}
 
-  ngOnInit(): void {
-    this.taskService.getTasks();
-  }
+  // Removed ngOnInit - parent component loads tasks
 
   // Filter signal - writable
   private statusFilterSignal = signal<string>('');

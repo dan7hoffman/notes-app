@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from "@angular/common";
 import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { LOGGING_STORAGE_KEY } from "../logging.constants";
-import { SystemLogging } from "../logging.model";
+import { Log } from "../logging.model";
 import { dateReviver } from "../../../shared/utils/json-serialization.util";
 
 @Injectable({providedIn:'root'})
@@ -11,27 +11,27 @@ export class LoggingRepository {
     private get isBrowser(): boolean {
         return isPlatformBrowser(this.platformId);
     }
-    getAll(): SystemLogging[]{
+    getAll(): Log[]{
         if (!this.isBrowser) return [];
         try {
             const raw = localStorage.getItem(this.storageKey);
             if (!raw){
                 return[];
             }
-            const systemLogging = JSON.parse(raw, dateReviver);
-            if (!Array.isArray(systemLogging)){
+            const logs = JSON.parse(raw, dateReviver);
+            if (!Array.isArray(logs)){
                 return[];
             }
-            return systemLogging;
+            return logs;
         } catch (error){
             return [];
         }
     }
-    saveAll(systemLogging:SystemLogging[]):boolean{
+    saveAll(logs:Log[]):boolean{
         if (!this.isBrowser) return false;
         try {
-        const systemLoggingCopy = systemLogging.map(systemLog => ({...systemLog}));
-        const serialized = JSON.stringify(systemLoggingCopy);
+        const logsCopy = logs.map(log => ({...log}));
+        const serialized = JSON.stringify(logsCopy);
         localStorage.setItem(this.storageKey,serialized);
         return true;
         } catch (error){

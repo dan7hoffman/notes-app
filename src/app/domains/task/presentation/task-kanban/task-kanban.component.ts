@@ -44,10 +44,7 @@ export class TaskKanbanComponent {
     private taskService: TaskService
   ) {}
 
-  ngOnInit(): void {
-    // Populate tasks initially
-    this.taskService.getTasks();
-  }
+  // Removed ngOnInit - parent component loads tasks
 
   // Handle sort option change
   onSortChange(status: TaskStatus, event: Event): void {

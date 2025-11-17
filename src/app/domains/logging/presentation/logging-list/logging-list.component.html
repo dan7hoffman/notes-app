@@ -1,4 +1,27 @@
-<p>Hello World</p>
-<!-- @if (systemLogging.length === 0) {
-    <p>No logs available</p>
-} -->
+<div class="logging-container">
+    <h2>System Logs</h2>
+
+    @if (logs().length === 0) {
+        <p class="no-logs">No logs available</p>
+    } @else {
+        <div class="logs-list">
+            @for (log of logs(); track log.id) {
+                <div class="log-entry" [class]="'log-' + log.level">
+                    <div class="log-header">
+                        <span class="log-level">{{ log.level }}</span>
+                        <span class="log-timestamp">{{ log.timeStamp | date:'short' }}</span>
+                    </div>
+                    <div class="log-message">{{ log.message }}</div>
+                    @if (log.context) {
+                        <div class="log-context">Context: {{ log.context }}</div>
+                    }
+                    @if (log.data) {
+                        <div class="log-data">
+                            <pre>{{ log.data | json }}</pre>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

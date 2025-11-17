@@ -77,13 +77,36 @@ export class TaskAddComponent {
   updateTask(): void {
     const editingId = this.taskState.selectedTaskId();
     if (editingId !== null) {
-      this.taskService.update(editingId, {
-        title: this.newTitle(),
-        content: this.newContent(),
-        status: this.newStatus(),
-        priority: this.newPriority(),
-        tags: this.newTags(),
-      });
+      // Get the original task to compare changes
+      const originalTask = this.taskState.tasks().find(t => t.id === editingId);
+
+      if (!originalTask) return;
+
+      // Build updates object with only changed fields
+      const updates: any = {};
+
+      if (this.newTitle() !== originalTask.title) {
+        updates.title = this.newTitle();
+      }
+      if (this.newContent() !== originalTask.content) {
+        updates.content = this.newContent();
+      }
+      if (this.newStatus() !== originalTask.status) {
+        updates.status = this.newStatus();
+      }
+      if (this.newPriority() !== originalTask.priority) {
+        updates.priority = this.newPriority();
+      }
+      // Compare arrays (tags) by JSON stringification
+      if (JSON.stringify(this.newTags()) !== JSON.stringify(originalTask.tags)) {
+        updates.tags = this.newTags();
+      }
+
+      // Only call update if something changed
+      if (Object.keys(updates).length > 0) {
+        this.taskService.update(editingId, updates);
+      }
+
       this.taskState.setSelectedTaskId(null);
       this.clearForm();
     }
