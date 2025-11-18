@@ -1,6 +1,6 @@
 # Notes App - Angular Learning Repository
 
-> **Educational Reference:** Clean 3-layer architecture with modern Angular signals, CRUD operations, Kanban board, and audit history.
+> **Educational Reference:** Clean 3-layer architecture with modern Angular signals, multiple production-ready domains (Tasks, Logging, Balance Sheet, Workflow Engine), and comprehensive testing.
 
 [![Angular](https://img.shields.io/badge/Angular-18-red.svg)](https://angular.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
@@ -27,13 +27,15 @@ This is a **learning-focused repository** demonstrating production-ready Angular
 
 ### **Advanced Features**
 - ✅ Audit trail / history tracking
-- ✅ System-wide logging with signal-based reactivity
+- ✅ System-wide logging with pagination, search, filtering
 - ✅ Soft delete pattern
 - ✅ Time-travel debugging (revert to previous state)
 - ✅ Multi-view presentation (List, Kanban, Metrics, Logs)
 - ✅ Drag-and-drop with Angular CDK
 - ✅ Multi-select with checkboxes
 - ✅ Delta-based change tracking (only log what changed)
+- ✅ Financial balance sheet tracking with net worth calculation
+- ✅ Enterprise workflow engine with status tracking and templates
 
 ### **Production Patterns**
 - ✅ Type-safe CRUD operations (zero `any` casts)
@@ -46,7 +48,7 @@ This is a **learning-focused repository** demonstrating production-ready Angular
 - ✅ SSR-friendly (platform checks)
 - ✅ Date serialization handling
 - ✅ Enum-driven type safety
-- ✅ Comprehensive test coverage (47 passing tests for logging domain)
+- ✅ Comprehensive test coverage (72 passing tests for logging domain)
 
 ---
 
@@ -74,16 +76,50 @@ src/app/domains/task/
 ```
 src/app/domains/logging/
 ├── data/
-│   ├── logging.repository.ts       # Log persistence (localStorage)
-│   └── logging.repository.spec.ts  # 20 tests (persistence, SSR, errors)
+│   ├── logging.repository.ts          # Log persistence with delete/clear (localStorage)
+│   └── logging.repository.spec.ts     # 20 tests (CRUD, SSR, errors)
 ├── service/
-│   ├── logging.service.ts          # Log creation with auto-initialization
-│   ├── logging.service.spec.ts     # 14 tests (CRUD, ID generation, integration)
-│   ├── loggingState.service.ts     # Reactive state with auto-sorting
-│   └── loggingState.service.spec.ts # 13 tests (signals, sorting, reactivity)
+│   ├── logging.service.ts             # Complete CRUD with auto-initialization
+│   ├── logging.service.spec.ts        # 14 tests (CRUD, ID generation, integration)
+│   ├── loggingState.service.ts        # Reactive state with auto-sorting
+│   └── loggingState.service.spec.ts   # 13 tests (signals, sorting, reactivity)
 ├── presentation/
-│   └── logging-list/               # Log viewer with expand/collapse
-└── logging.model.ts                # Log types & levels (Info, Warn, Error)
+│   └── logging-list/
+│       ├── logging-list.component.ts  # Log viewer with pagination, search, filters
+│       ├── logging-list.component.html # Responsive UI with delete/clear actions
+│       ├── logging-list.component.scss # Material Design styling
+│       └── logging-list.component.spec.ts # 25 tests (filtering, pagination, CRUD)
+└── logging.model.ts                   # Type-safe log models (Info, Warn, Error)
+```
+
+### **Balance Sheet Domain**
+```
+src/app/domains/balance-sheet/
+├── data/
+│   └── balance-sheet.repository.ts    # Financial data persistence
+├── service/
+│   ├── balance-sheet.service.ts       # Balance sheet CRUD orchestration
+│   └── balanceSheetState.service.ts   # Reactive financial state management
+├── presentation/
+│   ├── account-list/                  # Asset/liability account management
+│   ├── balance-form/                  # Record account balances
+│   ├── balance-history/               # Historical balance tracking
+│   └── balance-sheet-view/            # Net worth dashboard
+└── balance-sheet.model.ts             # Financial domain models
+```
+
+### **Workflow Engine Domain**
+```
+src/app/domains/workflow/
+├── data/
+│   └── workflow.repository.ts         # Workflow persistence
+├── service/
+│   ├── workflow.service.ts            # Workflow orchestration
+│   └── workflowState.service.ts       # Reactive workflow state
+├── presentation/
+│   ├── instance-tracker/              # Active workflow instances
+│   └── template-library/              # Reusable workflow templates
+└── workflow.model.ts                  # Workflow domain models
 ```
 
 ### **Shared Utilities**
@@ -106,7 +142,50 @@ src/app/shared/utils/
 
 ## ⚡ Recent Architectural Improvements
 
-The task domain has been comprehensively refactored to implement **10 production-grade patterns**:
+### **Logging Domain P0 Enhancements (Latest)**
+
+The logging domain received critical production-ready upgrades:
+
+**1. Complete CRUD Operations**
+- Added `delete()` method across all layers (repository → state → service)
+- Added `clear()` method for bulk deletion
+- Proper orchestration: persist to storage first, then update signal state
+- Memory leak prevention: cleanup of UI expansion state
+
+**2. Pagination System**
+- Configurable page size (default 5 logs per page)
+- Computed signals for `paginatedLogs`, `totalPages`, navigation state
+- Auto-reset to first page when filters change
+- Conditional display (only shows when multiple pages exist)
+
+**3. Enhanced UI/UX**
+- Search across message, context, and data fields
+- Filter by log level (Info, Warning, Error)
+- Individual delete buttons with confirmation dialogs
+- "Clear All" button with confirmation
+- Material Icons integration throughout
+
+**4. Type Safety & Documentation**
+- Fixed `data?: any` → `data?: unknown` for proper type checking
+- Corrected copy-paste documentation errors
+- Added comprehensive JSDoc comments
+
+**5. Test Coverage**
+- Created 25 component tests (filtering, pagination, CRUD)
+- Total: **72 tests passing** (up from 47)
+- Coverage: filtering, pagination, expansion, delete/clear operations
+
+**6. DDD Compliance**
+- ✅ Layer separation maintained
+- ✅ Signal-based reactive state
+- ✅ Unidirectional data flow
+- ✅ Single source of truth preserved
+
+---
+
+### **Task Domain Production Patterns**
+
+The task domain implements **10 production-grade patterns**:
 
 ### **1. Robust Error Handling**
 Try/catch blocks around all localStorage operations prevent silent failures. Handles quota exceeded, corrupted data, and access failures gracefully.
@@ -161,7 +240,7 @@ history: [{
 ```
 
 ### **3. System Logging**
-Comprehensive logging across operations:
+Production-ready logging with complete CRUD:
 ```typescript
 // Automatic logging on CRUD operations
 this.loggingService.add({
@@ -174,13 +253,26 @@ this.loggingService.add({
 - **Info logs**: Task creation, updates
 - **Warning logs**: Soft/hard deletes
 - **Error logs**: Operations on non-existent tasks
-- Auto-sorted newest first with expandable data views
+- **Features**: Pagination (5/page), search, level filtering, delete/clear, expandable data
+- **Auto-sorted**: Newest first with timezone-aware timestamps
 
-### **4. Multiple Views**
+### **4. Multiple Domains & Views**
+**Task Domain:**
 - **List View:** Filterable task list with full history
 - **Kanban Board:** Drag-and-drop columns with sorting
 - **Metrics Dashboard:** Real-time computed statistics
-- **Logging View:** System activity log with color-coded levels
+
+**Logging Domain:**
+- **System Logs:** Paginated activity log with search, filtering, delete/clear
+
+**Balance Sheet Domain:**
+- **Account Management:** Track assets and liabilities
+- **Balance Recording:** Historical balance entries
+- **Net Worth Dashboard:** Real-time financial calculations
+
+**Workflow Engine:**
+- **Instance Tracker:** Monitor active workflows
+- **Template Library:** Reusable workflow definitions
 
 ### **5. Reactive State**
 ```typescript
@@ -310,12 +402,14 @@ saveAll(tasks: Task[]): boolean {
 notes-app/
 ├── src/app/
 │   ├── domains/
-│   │   ├── task/          # Task domain (complete)
-│   │   ├── logging/       # Logging domain (complete)
-│   │   └── notes/         # Notes domain (planned)
+│   │   ├── task/           # Task domain (complete with history)
+│   │   ├── logging/        # Logging domain (complete with pagination)
+│   │   ├── balance-sheet/  # Balance sheet domain (complete)
+│   │   ├── workflow/       # Workflow engine domain (complete)
+│   │   └── notes/          # Notes domain (planned)
 │   ├── shared/
-│   │   └── utils/         # Date formatting, serialization
-│   └── layout/            # Header, sidebar, footer
+│   │   └── utils/          # Date formatting, serialization, comparison
+│   └── layout/             # Header, sidebar, footer
 └── README.md
 ```
 
@@ -408,9 +502,12 @@ Components Auto-Render
 - [ ] Task attachments
 - [ ] Subtasks / hierarchies
 - [ ] Due dates & reminders
-- [x] Unit & integration tests (47 tests for logging domain)
+- [x] Unit & integration tests (72 tests for logging domain)
 - [ ] Unit tests for task domain
+- [ ] Unit tests for balance-sheet domain
+- [ ] Unit tests for workflow domain
 - [ ] Optimistic updates pattern
+- [ ] Notes domain implementation
 
 ---
 
