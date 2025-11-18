@@ -19,6 +19,7 @@ export class SidebarComponent {
     { path: '/notes', label: 'Notes' },
     { path: '/tasks', label: 'Tasks' },
     { path: '/balance-sheet', label: 'Balance Sheet' },
-    { path: '/logging', label: 'Logging'}
+    { path: '/logging', label: 'Logging'},
+    { path: '/workflow', label: 'Workflow Engine' }
   ];
 }
