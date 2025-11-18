@@ -10,6 +10,7 @@ export class LogStateService {
 
     // Computed signal: logs sorted newest first
     readonly logs = computed(() => {
+        // [...this._logs()] creates a new array before sorting that array so we don't sort the original
         return [...this._logs()].sort((a, b) =>
             b.timeStamp.getTime() - a.timeStamp.getTime()
         );

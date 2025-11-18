@@ -46,6 +46,7 @@ This is a **learning-focused repository** demonstrating production-ready Angular
 - ✅ SSR-friendly (platform checks)
 - ✅ Date serialization handling
 - ✅ Enum-driven type safety
+- ✅ Comprehensive test coverage (47 passing tests for logging domain)
 
 ---
 
@@ -73,10 +74,13 @@ src/app/domains/task/
 ```
 src/app/domains/logging/
 ├── data/
-│   └── logging.repository.ts       # Log persistence (localStorage)
+│   ├── logging.repository.ts       # Log persistence (localStorage)
+│   └── logging.repository.spec.ts  # 20 tests (persistence, SSR, errors)
 ├── service/
 │   ├── logging.service.ts          # Log creation with auto-initialization
-│   └── loggingState.service.ts     # Reactive state with auto-sorting
+│   ├── logging.service.spec.ts     # 14 tests (CRUD, ID generation, integration)
+│   ├── loggingState.service.ts     # Reactive state with auto-sorting
+│   └── loggingState.service.spec.ts # 13 tests (signals, sorting, reactivity)
 ├── presentation/
 │   └── logging-list/               # Log viewer with expand/collapse
 └── logging.model.ts                # Log types & levels (Info, Warn, Error)
@@ -404,7 +408,8 @@ Components Auto-Render
 - [ ] Task attachments
 - [ ] Subtasks / hierarchies
 - [ ] Due dates & reminders
-- [ ] Unit & integration tests
+- [x] Unit & integration tests (47 tests for logging domain)
+- [ ] Unit tests for task domain
 - [ ] Optimistic updates pattern
 
 ---

@@ -38,7 +38,14 @@ export class LoggingService {
     //When new LOG is ADDED it adds to the local storage AND the signal
     add(data:NewLogData): Log {
         const now = new Date();
-        const id = Date.now();
+
+        // Generate unique incremental ID
+        const existingLogs = this.repo.getAll();
+        const maxId = existingLogs.length > 0
+            ? Math.max(...existingLogs.map(l => l.id))
+            : 0;
+        const id = maxId + 1;
+
         const newLog:Log={
     id,
     level: data.level,
@@ -47,9 +54,15 @@ export class LoggingService {
     data: data.data,
     timeStamp: now,
         };
-        const logs = [...this.repo.getAll(),newLog];
-        this.repo.saveAll(logs);
+        // Order matters
+        const logs = [...existingLogs,newLog];
+        // Persist first
+        const saved = this.repo.saveAll(logs);
+        // Then update signal
         this.logState.setLogs(logs);
+        if (!saved) {
+            console.warn('[LoggingService] Log added to memory but failed to persist to storage');
+        }
         return newLog;
     }
 }

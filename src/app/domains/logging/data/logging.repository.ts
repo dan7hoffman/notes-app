@@ -18,12 +18,14 @@ export class LoggingRepository {
             if (!raw){
                 return[];
             }
+            // Use dateReviver to convert stored ISO STRINGS back into an actual DATE OBJECT
             const logs = JSON.parse(raw, dateReviver);
             if (!Array.isArray(logs)){
                 return[];
             }
             return logs;
         } catch (error){
+            console.error('[LoggingRepository] Failed to load logs from localStorage:', error);
             return [];
         }
     }
@@ -35,6 +37,7 @@ export class LoggingRepository {
         localStorage.setItem(this.storageKey,serialized);
         return true;
         } catch (error){
+            console.error('[LoggingRepository] Failed to save logs to localStorage:', error);
             return false;
         }
     }
