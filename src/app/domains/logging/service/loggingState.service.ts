@@ -20,4 +20,19 @@ export class LogStateService {
     setLogs(logs:Log[]):void{
         this._logs.set(logs);
     }
+
+    /**
+     * Remove a specific log by ID
+     * @param id - The ID of the log to remove
+     */
+    removeLog(id: number): void {
+        this._logs.update(logs => logs.filter(log => log.id !== id));
+    }
+
+    /**
+     * Clear all logs
+     */
+    clearLogs(): void {
+        this._logs.set([]);
+    }
 }

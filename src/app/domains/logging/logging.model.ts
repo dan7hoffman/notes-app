@@ -9,6 +9,6 @@ export interface Log {
     level: LogLevel;
     message: string;
     context?: string;
-    data?: any;
-    timeStamp: Date
+    data?: unknown;
+    timeStamp: Date;
 }

@@ -41,4 +41,38 @@ export class LoggingRepository {
             return false;
         }
     }
+
+    /**
+     * Delete a specific log by ID
+     * @param id - The ID of the log to delete
+     * @returns true if successful, false otherwise
+     */
+    delete(id: number): boolean {
+        const logs = this.getAll();
+        const filtered = logs.filter(log => log.id !== id);
+
+        // If nothing was filtered, log doesn't exist
+        if (filtered.length === logs.length) {
+            console.warn(`[LoggingRepository] Log with id ${id} not found`);
+            return false;
+        }
+
+        return this.saveAll(filtered);
+    }
+
+    /**
+     * Clear all logs from storage
+     * @returns true if successful, false otherwise
+     */
+    clear(): boolean {
+        if (!this.isBrowser) return false;
+
+        try {
+            localStorage.removeItem(this.storageKey);
+            return true;
+        } catch (error) {
+            console.error('[LoggingRepository] Failed to clear logs from localStorage:', error);
+            return false;
+        }
+    }
 }

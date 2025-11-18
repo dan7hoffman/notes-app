@@ -65,4 +65,29 @@ export class LoggingService {
         }
         return newLog;
     }
+
+    /**
+     * Delete a specific log by ID
+     * @param id - The ID of the log to delete
+     * @returns true if successful, false otherwise
+     */
+    delete(id: number): boolean {
+        const success = this.repo.delete(id);
+        if (success) {
+            this.logState.removeLog(id);
+        }
+        return success;
+    }
+
+    /**
+     * Clear all logs
+     * @returns true if successful, false otherwise
+     */
+    clear(): boolean {
+        const success = this.repo.clear();
+        if (success) {
+            this.logState.clearLogs();
+        }
+        return success;
+    }
 }

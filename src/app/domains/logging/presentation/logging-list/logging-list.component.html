@@ -1,5 +1,18 @@
 <div class="logging-container">
-  <h2>System Logs</h2>
+  <div class="header-row">
+    <h2>System Logs</h2>
+
+    <div class="header-actions">
+      <button
+        class="clear-btn"
+        (click)="clearAllLogs()"
+        [disabled]="filteredLogs().length === 0"
+        title="Clear all logs">
+        <span class="material-icons">delete_sweep</span>
+        Clear All
+      </button>
+    </div>
+  </div>
 
   <!-- Search + Level Filter -->
   <div class="search-controls">
@@ -8,7 +21,7 @@
       type="text"
       placeholder="Search logs..."
       [value]="searchText()"
-      (input)="searchText.set(searchInput.value)"
+      (input)="onSearchChange(searchInput.value)"
     />
 
     <select
@@ -29,7 +42,7 @@
   } @else {
     <!-- Logs list -->
     <div class="logs-list">
-      @for (log of filteredLogs(); track log.id) {
+      @for (log of paginatedLogs(); track log.id) {
         <div class="log-entry" [class]="'log-' + log.level">
           <div class="log-header">
             <span class="log-level">
@@ -47,18 +60,56 @@
             <div class="log-context">Context: {{ log.context }}</div>
           }
 
-          @if (log.data) {
-            <button (click)="toggleExpand(log.id)">
-              {{ isExpanded(log.id) ? 'Collapse' : 'Expand' }} Data
-            </button>
-            @if (isExpanded(log.id)) {
-              <div class="log-data">
-                <pre>{{ log.data | json }}</pre>
-              </div>
+          <div class="log-actions">
+            @if (log.data) {
+              <button class="expand-btn" (click)="toggleExpand(log.id)">
+                <span class="material-icons">
+                  {{ isExpanded(log.id) ? 'expand_less' : 'expand_more' }}
+                </span>
+                {{ isExpanded(log.id) ? 'Collapse' : 'Expand' }} Data
+              </button>
             }
+            <button class="delete-btn" (click)="deleteLog(log.id)" title="Delete log">
+              <span class="material-icons">delete</span>
+              Delete
+            </button>
+          </div>
+
+          @if (log.data && isExpanded(log.id)) {
+            <div class="log-data">
+              <pre>{{ log.data | json }}</pre>
+            </div>
           }
         </div>
       }
     </div>
+
+    <!-- Pagination controls -->
+    @if (totalPages() > 1) {
+      <div class="pagination-controls">
+        <button
+          class="pagination-btn"
+          (click)="previousPage()"
+          [disabled]="!canGoPrevious()"
+          title="Previous page">
+          <span class="material-icons">chevron_left</span>
+          Previous
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage() + 1 }} of {{ totalPages() }}
+          ({{ filteredLogs().length }} total logs)
+        </span>
+
+        <button
+          class="pagination-btn"
+          (click)="nextPage()"
+          [disabled]="!canGoNext()"
+          title="Next page">
+          Next
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    }
   }
 </div>

@@ -16,28 +16,41 @@ export class LoggingListComponent {
     // Access logs directly from the service signal
     logs = this.loggingService.logs;
 
-    // Search state (component-loca)
-    searchText = signal ('');
+    // Search state (component-local)
+    searchText = signal('');
     selectedLevel = signal<'all' | LogLevel>('all');
-    onLevelChange(level: string) {
-    this.selectedLevel.set(level as LogLevel | 'all');
+
+    onSearchChange(text: string): void {
+        this.searchText.set(text);
+        // Reset to first page when search changes
+        this.currentPage.set(0);
     }
 
-    // Computed filter logs
-    filteredLogs = computed(()=>{
+    onLevelChange(level: string): void {
+        this.selectedLevel.set(level as LogLevel | 'all');
+        // Reset to first page when filter changes
+        this.currentPage.set(0);
+    }
+
+    // Pagination state
+    pageSize = signal(5);
+    currentPage = signal(0);
+
+    // Computed filtered logs
+    filteredLogs = computed(() => {
         const logs = this.logs();
         const search = this.searchText().toLowerCase();
         const level = this.selectedLevel();
 
-        return logs.filter(log=>{
-            //Filter by level
-            if(level != 'all' && log.level !== level) return false;
+        return logs.filter(log => {
+            // Filter by level
+            if (level !== 'all' && log.level !== level) return false;
 
-            //Filter by search
+            // Filter by search
             const searchable = [
-            log.message,
-            log.context ?? '',
-            JSON.stringify(log.data ?? '')
+                log.message,
+                log.context ?? '',
+                JSON.stringify(log.data ?? '')
             ].join(' ').toLowerCase();
 
             if (!searchable.includes(search)) return false;
@@ -45,6 +58,48 @@ export class LoggingListComponent {
             return true;
         });
     });
+
+    // Computed paginated logs
+    paginatedLogs = computed(() => {
+        const filtered = this.filteredLogs();
+        const page = this.currentPage();
+        const size = this.pageSize();
+
+        const startIndex = page * size;
+        const endIndex = startIndex + size;
+
+        return filtered.slice(startIndex, endIndex);
+    });
+
+    // Computed pagination metadata
+    totalPages = computed(() => {
+        const filtered = this.filteredLogs();
+        const size = this.pageSize();
+        return Math.ceil(filtered.length / size);
+    });
+
+    canGoPrevious = computed(() => this.currentPage() > 0);
+    canGoNext = computed(() => this.currentPage() < this.totalPages() - 1);
+
+    // Pagination navigation methods
+    goToPage(page: number): void {
+        const total = this.totalPages();
+        if (page >= 0 && page < total) {
+            this.currentPage.set(page);
+        }
+    }
+
+    nextPage(): void {
+        if (this.canGoNext()) {
+            this.currentPage.update(page => page + 1);
+        }
+    }
+
+    previousPage(): void {
+        if (this.canGoPrevious()) {
+            this.currentPage.update(page => page - 1);
+        }
+    }
 
     // Expose formatter for template use
     formatAbsoluteDateTime = formatAbsoluteDateTime;
@@ -69,6 +124,28 @@ export class LoggingListComponent {
 
     isExpanded(logId: number): boolean {
         return this.expandedLogs.has(logId);
+    }
+
+    /**
+     * Delete a specific log
+     */
+    deleteLog(id: number): void {
+        if (confirm('Are you sure you want to delete this log?')) {
+            this.loggingService.delete(id);
+            // Also remove from expanded set if it was expanded
+            this.expandedLogs.delete(id);
+        }
+    }
+
+    /**
+     * Clear all logs
+     */
+    clearAllLogs(): void {
+        if (confirm('Are you sure you want to clear all logs? This cannot be undone.')) {
+            this.loggingService.clear();
+            // Clear expanded set as well
+            this.expandedLogs.clear();
+        }
     }
 
     constructor(
