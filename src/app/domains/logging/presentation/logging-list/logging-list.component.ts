@@ -1,9 +1,10 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, signal } from "@angular/core";
+import { Component, computed, effect, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { LoggingService } from "../../service/logging.service";
 import { formatAbsoluteDateTime } from "../../../../shared/utils/date-formatter.util";
 import { LogLevel } from "../../logging.model";
+import { DEFAULT_PAGE_SIZE } from "../../logging.constants";
 
 @Component({
     selector: 'app-logging-list',
@@ -17,13 +18,25 @@ export class LoggingListComponent {
     logs = this.loggingService.logs;
 
     // Search state (component-local)
-    searchText = signal('');
+    private searchInput = signal(''); // Raw input from user
+    searchText = signal(''); // Debounced search text
     selectedLevel = signal<'all' | LogLevel>('all');
+    private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     onSearchChange(text: string): void {
-        this.searchText.set(text);
-        // Reset to first page when search changes
-        this.currentPage.set(0);
+        this.searchInput.set(text);
+
+        // Clear existing timer
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+
+        // Set new timer for debounced update
+        this.searchDebounceTimer = setTimeout(() => {
+            this.searchText.set(text);
+            // Reset to first page when search changes
+            this.currentPage.set(0);
+        }, 300); // 300ms debounce
     }
 
     onLevelChange(level: string): void {
@@ -33,7 +46,7 @@ export class LoggingListComponent {
     }
 
     // Pagination state
-    pageSize = signal(5);
+    pageSize = signal(DEFAULT_PAGE_SIZE);
     currentPage = signal(0);
 
     // Computed filtered logs

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { LoggingListComponent } from './logging-list.component';
 import { LoggingService } from '../../service/logging.service';
 import { LogStateService } from '../../service/loggingState.service';
@@ -61,14 +61,15 @@ describe('LoggingListComponent', () => {
     });
 
     describe('Filtering', () => {
-        it('should filter logs by search text', () => {
+        it('should filter logs by search text', fakeAsync(() => {
             component.onSearchChange('warning');
+            tick(300); // Wait for debounce
             fixture.detectChanges();
 
             const filtered = component.filteredLogs();
             expect(filtered.length).toBe(1);
             expect(filtered[0].message).toContain('warning');
-        });
+        }));
 
         it('should filter logs by level', () => {
             component.onLevelChange(LogLevel.Error);
@@ -79,29 +80,31 @@ describe('LoggingListComponent', () => {
             expect(filtered[0].level).toBe(LogLevel.Error);
         });
 
-        it('should filter logs by both search and level', () => {
+        it('should filter logs by both search and level', fakeAsync(() => {
             component.onSearchChange('Test');
+            tick(300); // Wait for debounce
             component.onLevelChange(LogLevel.Information);
             fixture.detectChanges();
 
             const filtered = component.filteredLogs();
             expect(filtered.length).toBe(1);
             expect(filtered[0].level).toBe(LogLevel.Information);
-        });
+        }));
 
         it('should return all logs when no filters applied', () => {
             const filtered = component.filteredLogs();
             expect(filtered.length).toBe(mockLogs.length);
         });
 
-        it('should search in message, context, and data', () => {
+        it('should search in message, context, and data', fakeAsync(() => {
             component.onSearchChange('data1');
+            tick(300); // Wait for debounce
             fixture.detectChanges();
 
             const filtered = component.filteredLogs();
             expect(filtered.length).toBe(1);
             expect(filtered[0].id).toBe(1);
-        });
+        }));
     });
 
     describe('Pagination', () => {
@@ -120,14 +123,14 @@ describe('LoggingListComponent', () => {
             fixture.detectChanges();
         });
 
-        it('should paginate logs with default page size of 20', () => {
+        it('should paginate logs with default page size of 5', () => {
             const paginated = component.paginatedLogs();
-            expect(paginated.length).toBe(20);
+            expect(paginated.length).toBe(5);
         });
 
         it('should calculate total pages correctly', () => {
             const totalPages = component.totalPages();
-            expect(totalPages).toBe(3); // 50 logs / 20 per page = 3 pages
+            expect(totalPages).toBe(10); // 50 logs / 5 per page = 10 pages
         });
 
         it('should navigate to next page', () => {
@@ -138,7 +141,7 @@ describe('LoggingListComponent', () => {
 
             expect(component.currentPage()).toBe(1);
             const paginated = component.paginatedLogs();
-            expect(paginated.length).toBe(20);
+            expect(paginated.length).toBe(5);
         });
 
         it('should navigate to previous page', () => {
@@ -161,7 +164,7 @@ describe('LoggingListComponent', () => {
         });
 
         it('should not go to next page when on last page', () => {
-            component.goToPage(2); // Last page (0-indexed)
+            component.goToPage(9); // Last page (0-indexed, page 10 of 10)
             fixture.detectChanges();
 
             expect(component.canGoNext()).toBe(false);
@@ -169,19 +172,20 @@ describe('LoggingListComponent', () => {
             component.nextPage();
             fixture.detectChanges();
 
-            expect(component.currentPage()).toBe(2);
+            expect(component.currentPage()).toBe(9);
         });
 
-        it('should reset to first page when search changes', () => {
+        it('should reset to first page when search changes', fakeAsync(() => {
             component.goToPage(1);
             fixture.detectChanges();
             expect(component.currentPage()).toBe(1);
 
             component.onSearchChange('test');
+            tick(300); // Wait for debounce
             fixture.detectChanges();
 
             expect(component.currentPage()).toBe(0);
-        });
+        }));
 
         it('should reset to first page when level filter changes', () => {
             component.goToPage(1);
@@ -195,11 +199,11 @@ describe('LoggingListComponent', () => {
         });
 
         it('should show last page with remaining items', () => {
-            component.goToPage(2); // Last page
+            component.goToPage(9); // Last page (page 10 of 10)
             fixture.detectChanges();
 
             const paginated = component.paginatedLogs();
-            expect(paginated.length).toBe(10); // 50 - (20 * 2) = 10 remaining
+            expect(paginated.length).toBe(5); // Pages 0-8 have 45 logs, page 9 has remaining 5
         });
     });
 

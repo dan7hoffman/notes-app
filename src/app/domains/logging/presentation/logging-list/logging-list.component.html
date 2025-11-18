@@ -1,6 +1,7 @@
 <div class="logging-container">
   <div class="header-row">
     <h2>System Logs</h2>
+    <p>This logs actions across other Domains</p>
 
     <div class="header-actions">
       <button
@@ -17,11 +18,10 @@
   <!-- Search + Level Filter -->
   <div class="search-controls">
     <input
-      #searchInput
+      #searchInputElement
       type="text"
       placeholder="Search logs..."
-      [value]="searchText()"
-      (input)="onSearchChange(searchInput.value)"
+      (input)="onSearchChange(searchInputElement.value)"
     />
 
     <select
