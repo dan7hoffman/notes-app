@@ -25,7 +25,10 @@ export class WorkflowInitService {
   initializeSampleTemplates(): void {
     // Check if templates already exist
     const existingTemplates = this.templateRepository.getAll();
+    console.log(`Found ${existingTemplates.length} existing templates`);
+
     if (existingTemplates.length > 0) {
+      console.log('Templates already initialized, skipping...');
       return; // Already initialized
     }
 
@@ -38,7 +41,8 @@ export class WorkflowInitService {
     this.createInternationalTravelTemplate();
     this.createDocumentReviewTemplate();
 
-    console.log('Sample templates created successfully!');
+    const finalCount = this.templateRepository.getAll().length;
+    console.log(`Sample templates created successfully! Total count: ${finalCount}`);
   }
 
   /**
@@ -57,14 +61,13 @@ export class WorkflowInitService {
           name: 'Submit Request',
           description: 'Submit your request for approval',
           allowedRoles: [DEFAULT_ROLES.SUBMITTER],
-          transitions: [
-            {
-              action: 'submit',
-              targetStepId: 'will-be-generated', // Placeholder
-              label: 'Submit for Approval',
-              requiresComment: false
-            }
-          ],
+          transitions: [{
+            id: 'temp',
+            action: 'submit',
+            targetStepId: null,
+            label: 'Submit',
+            requiresComment: false
+          }],
           order: 0,
           isTerminal: false
         },
@@ -72,20 +75,13 @@ export class WorkflowInitService {
           name: 'Manager Approval',
           description: 'Manager reviews and approves/rejects request',
           allowedRoles: [DEFAULT_ROLES.MANAGER, DEFAULT_ROLES.ADMIN],
-          transitions: [
-            {
-              action: 'approve',
-              targetStepId: 'will-be-generated',
-              label: 'Approve',
-              requiresComment: false
-            },
-            {
-              action: 'reject',
-              targetStepId: 'will-be-generated',
-              label: 'Reject',
-              requiresComment: true
-            }
-          ],
+          transitions: [{
+            id: 'temp',
+            action: 'approve',
+            targetStepId: null,
+            label: 'Approve',
+            requiresComment: false
+          }],
           order: 1,
           isTerminal: false
         },
@@ -109,15 +105,41 @@ export class WorkflowInitService {
       isPublic: true
     };
 
-    // Create and fix transition targets
+    // Create template
     const result = this.templateService.createTemplate(request);
     if (result.template && result.validation.isValid) {
-      // Fix transition targets
       const template = result.template;
-      template.steps[0].transitions[0].targetStepId = template.steps[1].id;
-      template.steps[1].transitions[0].targetStepId = template.steps[2].id;
-      template.steps[1].transitions[1].targetStepId = template.steps[3].id;
+
+      // Add transitions with proper step IDs
+      template.steps[0].transitions = [{
+        id: `${template.steps[0].id}-transition-0`,
+        action: 'submit',
+        targetStepId: template.steps[1].id,
+        label: 'Submit for Approval',
+        requiresComment: false
+      }];
+
+      template.steps[1].transitions = [
+        {
+          id: `${template.steps[1].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[2].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[1].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[3].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
       this.templateRepository.save(template);
+      console.log('✓ Simple Approval template created');
+    } else {
+      console.error('✗ Failed to create Simple Approval template:', result.validation.errors);
     }
   }
 
@@ -136,29 +158,21 @@ export class WorkflowInitService {
         {
           name: 'Submit Purchase Request',
           allowedRoles: [DEFAULT_ROLES.SUBMITTER],
-          transitions: [
-            { action: 'submit', targetStepId: 'placeholder', label: 'Submit Request', requiresComment: false }
-          ],
+          transitions: [{ id: 'temp', action: 'submit', targetStepId: null, label: 'Submit', requiresComment: false }],
           order: 0,
           isTerminal: false
         },
         {
           name: 'Manager Review',
           allowedRoles: [DEFAULT_ROLES.MANAGER],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 1,
           isTerminal: false
         },
         {
           name: 'Finance Approval',
           allowedRoles: [DEFAULT_ROLES.FINANCE, DEFAULT_ROLES.CFO],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 2,
           isTerminal: false
         },
@@ -183,12 +197,54 @@ export class WorkflowInitService {
     const result = this.templateService.createTemplate(request);
     if (result.template && result.validation.isValid) {
       const template = result.template;
-      template.steps[0].transitions[0].targetStepId = template.steps[1].id;
-      template.steps[1].transitions[0].targetStepId = template.steps[2].id;
-      template.steps[1].transitions[1].targetStepId = template.steps[4].id;
-      template.steps[2].transitions[0].targetStepId = template.steps[3].id;
-      template.steps[2].transitions[1].targetStepId = template.steps[4].id;
+
+      // Add transitions with proper step IDs
+      template.steps[0].transitions = [{
+        id: `${template.steps[0].id}-transition-0`,
+        action: 'submit',
+        targetStepId: template.steps[1].id,
+        label: 'Submit Request',
+        requiresComment: false
+      }];
+
+      template.steps[1].transitions = [
+        {
+          id: `${template.steps[1].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[2].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[1].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[4].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
+      template.steps[2].transitions = [
+        {
+          id: `${template.steps[2].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[3].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[2].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[4].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
       this.templateRepository.save(template);
+      console.log('✓ Purchase Order template created');
+    } else {
+      console.error('✗ Failed to create Purchase Order template:', result.validation.errors);
     }
   }
 
@@ -208,19 +264,14 @@ export class WorkflowInitService {
         {
           name: 'Submit Travel Request',
           allowedRoles: [DEFAULT_ROLES.SUBMITTER],
-          transitions: [
-            { action: 'submit', targetStepId: 'placeholder', label: 'Submit Request', requiresComment: false }
-          ],
+          transitions: [{ id: 'temp', action: 'submit', targetStepId: null, label: 'Submit', requiresComment: false }],
           order: 0,
           isTerminal: false
         },
         {
           name: 'Manager Approval',
           allowedRoles: [DEFAULT_ROLES.MANAGER],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 1,
           isTerminal: false
         },
@@ -245,10 +296,36 @@ export class WorkflowInitService {
     const result = this.templateService.createTemplate(request);
     if (result.template && result.validation.isValid) {
       const template = result.template;
-      template.steps[0].transitions[0].targetStepId = template.steps[1].id;
-      template.steps[1].transitions[0].targetStepId = template.steps[2].id;
-      template.steps[1].transitions[1].targetStepId = template.steps[3].id;
+
+      template.steps[0].transitions = [{
+        id: `${template.steps[0].id}-transition-0`,
+        action: 'submit',
+        targetStepId: template.steps[1].id,
+        label: 'Submit Request',
+        requiresComment: false
+      }];
+
+      template.steps[1].transitions = [
+        {
+          id: `${template.steps[1].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[2].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[1].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[3].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
       this.templateRepository.save(template);
+      console.log('✓ Domestic Travel template created');
+    } else {
+      console.error('✗ Failed to create Domestic Travel template:', result.validation.errors);
     }
   }
 
@@ -268,39 +345,28 @@ export class WorkflowInitService {
         {
           name: 'Submit Travel Request',
           allowedRoles: [DEFAULT_ROLES.SUBMITTER],
-          transitions: [
-            { action: 'submit', targetStepId: 'placeholder', label: 'Submit Request', requiresComment: false }
-          ],
+          transitions: [{ id: 'temp', action: 'submit', targetStepId: null, label: 'Submit', requiresComment: false }],
           order: 0,
           isTerminal: false
         },
         {
           name: 'Manager Approval',
           allowedRoles: [DEFAULT_ROLES.MANAGER],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 1,
           isTerminal: false
         },
         {
           name: 'Compliance Review',
           allowedRoles: [DEFAULT_ROLES.COMPLIANCE, DEFAULT_ROLES.LEGAL],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 2,
           isTerminal: false
         },
         {
           name: 'Finance Approval',
           allowedRoles: [DEFAULT_ROLES.FINANCE],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 3,
           isTerminal: false
         },
@@ -325,14 +391,70 @@ export class WorkflowInitService {
     const result = this.templateService.createTemplate(request);
     if (result.template && result.validation.isValid) {
       const template = result.template;
-      template.steps[0].transitions[0].targetStepId = template.steps[1].id;
-      template.steps[1].transitions[0].targetStepId = template.steps[2].id;
-      template.steps[1].transitions[1].targetStepId = template.steps[5].id;
-      template.steps[2].transitions[0].targetStepId = template.steps[3].id;
-      template.steps[2].transitions[1].targetStepId = template.steps[5].id;
-      template.steps[3].transitions[0].targetStepId = template.steps[4].id;
-      template.steps[3].transitions[1].targetStepId = template.steps[5].id;
+
+      template.steps[0].transitions = [{
+        id: `${template.steps[0].id}-transition-0`,
+        action: 'submit',
+        targetStepId: template.steps[1].id,
+        label: 'Submit Request',
+        requiresComment: false
+      }];
+
+      template.steps[1].transitions = [
+        {
+          id: `${template.steps[1].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[2].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[1].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[5].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
+      template.steps[2].transitions = [
+        {
+          id: `${template.steps[2].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[3].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[2].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[5].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
+      template.steps[3].transitions = [
+        {
+          id: `${template.steps[3].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[4].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[3].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[5].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
       this.templateRepository.save(template);
+      console.log('✓ International Travel template created');
+    } else {
+      console.error('✗ Failed to create International Travel template:', result.validation.errors);
     }
   }
 
@@ -351,30 +473,21 @@ export class WorkflowInitService {
         {
           name: 'Submit Document',
           allowedRoles: [DEFAULT_ROLES.SUBMITTER],
-          transitions: [
-            { action: 'submit', targetStepId: 'placeholder', label: 'Submit for Review', requiresComment: false }
-          ],
+          transitions: [{ id: 'temp', action: 'submit', targetStepId: null, label: 'Submit', requiresComment: false }],
           order: 0,
           isTerminal: false
         },
         {
           name: 'Peer Review',
           allowedRoles: [DEFAULT_ROLES.REVIEWER],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Approve', requiresComment: false },
-            { action: 'return', targetStepId: 'placeholder', label: 'Request Changes', requiresComment: true },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Approve', requiresComment: false }],
           order: 1,
           isTerminal: false
         },
         {
           name: 'Final Approval',
           allowedRoles: [DEFAULT_ROLES.MANAGER, DEFAULT_ROLES.DIRECTOR],
-          transitions: [
-            { action: 'approve', targetStepId: 'placeholder', label: 'Publish', requiresComment: false },
-            { action: 'reject', targetStepId: 'placeholder', label: 'Reject', requiresComment: true }
-          ],
+          transitions: [{ id: 'temp', action: 'approve', targetStepId: null, label: 'Publish', requiresComment: false }],
           order: 2,
           isTerminal: false
         },
@@ -399,13 +512,60 @@ export class WorkflowInitService {
     const result = this.templateService.createTemplate(request);
     if (result.template && result.validation.isValid) {
       const template = result.template;
-      template.steps[0].transitions[0].targetStepId = template.steps[1].id;
-      template.steps[1].transitions[0].targetStepId = template.steps[2].id;
-      template.steps[1].transitions[1].targetStepId = template.steps[0].id; // Return to submit
-      template.steps[1].transitions[2].targetStepId = template.steps[4].id;
-      template.steps[2].transitions[0].targetStepId = template.steps[3].id;
-      template.steps[2].transitions[1].targetStepId = template.steps[4].id;
+
+      template.steps[0].transitions = [{
+        id: `${template.steps[0].id}-transition-0`,
+        action: 'submit',
+        targetStepId: template.steps[1].id,
+        label: 'Submit for Review',
+        requiresComment: false
+      }];
+
+      template.steps[1].transitions = [
+        {
+          id: `${template.steps[1].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[2].id,
+          label: 'Approve',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[1].id}-transition-1`,
+          action: 'return',
+          targetStepId: template.steps[0].id, // Return to submit
+          label: 'Request Changes',
+          requiresComment: true
+        },
+        {
+          id: `${template.steps[1].id}-transition-2`,
+          action: 'reject',
+          targetStepId: template.steps[4].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
+      template.steps[2].transitions = [
+        {
+          id: `${template.steps[2].id}-transition-0`,
+          action: 'approve',
+          targetStepId: template.steps[3].id,
+          label: 'Publish',
+          requiresComment: false
+        },
+        {
+          id: `${template.steps[2].id}-transition-1`,
+          action: 'reject',
+          targetStepId: template.steps[4].id,
+          label: 'Reject',
+          requiresComment: true
+        }
+      ];
+
       this.templateRepository.save(template);
+      console.log('✓ Document Review template created');
+    } else {
+      console.error('✗ Failed to create Document Review template:', result.validation.errors);
     }
   }
 }

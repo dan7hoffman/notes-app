@@ -4,7 +4,8 @@
  * Framework layer for workflow instance persistence using localStorage
  */
 
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { WorkflowInstance, WorkflowStatus } from '../workflow.model';
 import { WORKFLOW_STORAGE_KEYS } from '../workflow.constants';
 
@@ -12,13 +13,21 @@ import { WORKFLOW_STORAGE_KEYS } from '../workflow.constants';
   providedIn: 'root'
 })
 export class InstanceRepository {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   private readonly storageKey = WORKFLOW_STORAGE_KEYS.INSTANCES;
   private readonly nextIdKey = WORKFLOW_STORAGE_KEYS.NEXT_INSTANCE_ID;
+
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
 
   /**
    * Get all instances
    */
   getAll(): WorkflowInstance[] {
+    if (!this.isBrowser) return [];
+
     try {
       const data = localStorage.getItem(this.storageKey);
       if (!data) {
@@ -269,6 +278,8 @@ export class InstanceRepository {
    * Clear all instances (dangerous!)
    */
   clear(): void {
+    if (!this.isBrowser) return;
+
     localStorage.removeItem(this.storageKey);
     localStorage.removeItem(this.nextIdKey);
   }
@@ -361,6 +372,8 @@ export class InstanceRepository {
    * Save all instances to localStorage
    */
   private saveAll(instances: WorkflowInstance[]): void {
+    if (!this.isBrowser) return;
+
     try {
       const serialized = this.serializeInstances(instances);
       localStorage.setItem(this.storageKey, JSON.stringify(serialized));
@@ -374,6 +387,8 @@ export class InstanceRepository {
    * Get next available ID
    */
   private getNextId(): number {
+    if (!this.isBrowser) return 1;
+
     const currentId = parseInt(localStorage.getItem(this.nextIdKey) || '1', 10);
     const nextId = currentId + 1;
     localStorage.setItem(this.nextIdKey, nextId.toString());

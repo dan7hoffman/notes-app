@@ -55,22 +55,22 @@ import { WORKFLOW_STATUS_CONFIG } from '../../workflow.constants';
             All ({{ instanceState.activeInstances().length }})
           </button>
           <button
-            [class.active]="statusFilter() === 'in_progress'"
-            (click)="setStatusFilter('in_progress')"
+            [class.active]="statusFilter() === WorkflowStatus.IN_PROGRESS"
+            (click)="setStatusFilter(WorkflowStatus.IN_PROGRESS)"
             class="filter-tab"
           >
             In Progress ({{ instanceState.inProgressInstances().length }})
           </button>
           <button
-            [class.active]="statusFilter() === 'draft'"
-            (click)="setStatusFilter('draft')"
+            [class.active]="statusFilter() === WorkflowStatus.DRAFT"
+            (click)="setStatusFilter(WorkflowStatus.DRAFT)"
             class="filter-tab"
           >
             Drafts ({{ instanceState.draftInstances().length }})
           </button>
           <button
-            [class.active]="statusFilter() === 'completed'"
-            (click)="setStatusFilter('completed')"
+            [class.active]="statusFilter() === WorkflowStatus.COMPLETED"
+            (click)="setStatusFilter(WorkflowStatus.COMPLETED)"
             class="filter-tab"
           >
             Completed ({{ instanceState.completedInstances().length }})
@@ -425,6 +425,9 @@ import { WORKFLOW_STATUS_CONFIG } from '../../workflow.constants';
 export class InstanceTrackerComponent {
   searchQuery = '';
   private statusFilterSignal = signal<'all' | WorkflowStatus>('all');
+
+  // Expose WorkflowStatus enum to template
+  readonly WorkflowStatus = WorkflowStatus;
 
   constructor(
     public instanceState: InstanceStateService,

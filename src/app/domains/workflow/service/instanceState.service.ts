@@ -4,7 +4,8 @@
  * Signal-based state management for workflow instances
  */
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, signal, computed } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { WorkflowInstance, WorkflowStatus } from '../workflow.model';
 import { InstanceRepository } from '../data/instance.repository';
 
@@ -86,8 +87,14 @@ export class InstanceStateService {
     total: this.activeInstances().length
   }));
 
-  constructor(private repository: InstanceRepository) {
-    this.loadInstances();
+  constructor(
+    private repository: InstanceRepository,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    // Only load instances in the browser
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadInstances();
+    }
   }
 
   // ============================================================================

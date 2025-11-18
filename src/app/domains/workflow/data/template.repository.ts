@@ -4,7 +4,8 @@
  * Framework layer for template persistence using localStorage
  */
 
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { WorkflowTemplate } from '../workflow.model';
 import { WORKFLOW_STORAGE_KEYS } from '../workflow.constants';
 
@@ -12,13 +13,21 @@ import { WORKFLOW_STORAGE_KEYS } from '../workflow.constants';
   providedIn: 'root'
 })
 export class TemplateRepository {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   private readonly storageKey = WORKFLOW_STORAGE_KEYS.TEMPLATES;
   private readonly nextIdKey = WORKFLOW_STORAGE_KEYS.NEXT_TEMPLATE_ID;
+
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
 
   /**
    * Get all templates
    */
   getAll(): WorkflowTemplate[] {
+    if (!this.isBrowser) return [];
+
     try {
       const data = localStorage.getItem(this.storageKey);
       if (!data) {
@@ -273,6 +282,8 @@ export class TemplateRepository {
    * Clear all templates (dangerous!)
    */
   clear(): void {
+    if (!this.isBrowser) return;
+
     localStorage.removeItem(this.storageKey);
     localStorage.removeItem(this.nextIdKey);
   }
@@ -299,6 +310,8 @@ export class TemplateRepository {
    * Save all templates to localStorage
    */
   private saveAll(templates: WorkflowTemplate[]): void {
+    if (!this.isBrowser) return;
+
     try {
       const serialized = this.serializeTemplates(templates);
       localStorage.setItem(this.storageKey, JSON.stringify(serialized));
@@ -312,6 +325,8 @@ export class TemplateRepository {
    * Get next available ID
    */
   private getNextId(): number {
+    if (!this.isBrowser) return 1;
+
     const currentId = parseInt(localStorage.getItem(this.nextIdKey) || '1', 10);
     const nextId = currentId + 1;
     localStorage.setItem(this.nextIdKey, nextId.toString());

@@ -4,7 +4,8 @@
  * Signal-based state management for workflow templates
  */
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, signal, computed } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { WorkflowTemplate, TemplateStatistics } from '../workflow.model';
 import { TemplateRepository } from '../data/template.repository';
 
@@ -77,8 +78,14 @@ export class TemplateStateService {
       .slice(0, 10)
   );
 
-  constructor(private repository: TemplateRepository) {
-    this.loadTemplates();
+  constructor(
+    private repository: TemplateRepository,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    // Only load templates in the browser
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadTemplates();
+    }
   }
 
   // ============================================================================

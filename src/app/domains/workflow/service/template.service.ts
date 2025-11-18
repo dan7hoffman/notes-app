@@ -50,7 +50,7 @@ export class TemplateService {
       tags: request.tags || WORKFLOW_DEFAULTS.TEMPLATE.TAGS,
       parentTemplateId: null,
       version: WORKFLOW_DEFAULTS.TEMPLATE.VERSION,
-      applicableTo: request.applicableTo || WORKFLOW_DEFAULTS.TEMPLATE.APPLICABLE_TO,
+      applicableTo: request.applicableTo || [...WORKFLOW_DEFAULTS.TEMPLATE.APPLICABLE_TO],
       departmentRestrictions: undefined,
       amountThresholds: undefined,
       whenToUse: request.whenToUse || '',
