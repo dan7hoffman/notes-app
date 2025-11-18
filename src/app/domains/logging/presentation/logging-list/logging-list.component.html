@@ -1,32 +1,64 @@
 <div class="logging-container">
-    <h2>System Logs</h2>
+  <h2>System Logs</h2>
 
-    @if (logs().length === 0) {
-        <p class="no-logs">No logs available</p>
-    } @else {
-        <div class="logs-list">
-            @for (log of logs(); track log.id) {
-                <div class="log-entry" [class]="'log-' + log.level">
-                    <div class="log-header">
-                        <span class="log-level">{{ log.level }}</span>
-                        <span class="log-timestamp">{{ formatAbsoluteDateTime(log.timeStamp) }}</span>
-                    </div>
-                    <div class="log-message">{{ log.message }}</div>
-                    @if (log.context) {
-                        <div class="log-context">Context: {{ log.context }}</div>
-                    }
-                    @if (log.data) {
-                        <button (click)="toggleExpand(log.id)">
-                            {{ isExpanded(log.id) ? 'Collapse' : 'Expand' }} Data
-                        </button>
-                        @if (isExpanded(log.id)) {
-                            <div class="log-data">
-                                <pre>{{ log.data | json }}</pre>
-                            </div>
-                        }
-                    }
-                </div>
+  <!-- Search + Level Filter -->
+  <div class="search-controls">
+    <input
+      #searchInput
+      type="text"
+      placeholder="Search logs..."
+      [value]="searchText()"
+      (input)="searchText.set(searchInput.value)"
+    />
+
+    <select
+      #levelSelect
+      [value]="selectedLevel()"
+      (change)="onLevelChange(levelSelect.value)"
+    >
+      <option value="all">All Levels</option>
+      <option value="info">Info</option>
+      <option value="warn">Warning</option>
+      <option value="error">Error</option>
+    </select>
+  </div>
+
+  <!-- No logs message -->
+  @if (filteredLogs().length === 0) {
+    <p class="no-logs">No logs available</p>
+  } @else {
+    <!-- Logs list -->
+    <div class="logs-list">
+      @for (log of filteredLogs(); track log.id) {
+        <div class="log-entry" [class]="'log-' + log.level">
+          <div class="log-header">
+            <span class="log-level">
+              <span class="log-icon material-icons">
+                {{ logLevelIcons[log.level] }}
+              </span>
+              {{ log.level.toUpperCase() }}
+            </span>
+            <span class="log-timestamp">{{ formatAbsoluteDateTime(log.timeStamp) }}</span>
+          </div>
+
+          <div class="log-message">{{ log.message }}</div>
+
+          @if (log.context) {
+            <div class="log-context">Context: {{ log.context }}</div>
+          }
+
+          @if (log.data) {
+            <button (click)="toggleExpand(log.id)">
+              {{ isExpanded(log.id) ? 'Collapse' : 'Expand' }} Data
+            </button>
+            @if (isExpanded(log.id)) {
+              <div class="log-data">
+                <pre>{{ log.data | json }}</pre>
+              </div>
             }
+          }
         </div>
-    }
+      }
+    </div>
+  }
 </div>
