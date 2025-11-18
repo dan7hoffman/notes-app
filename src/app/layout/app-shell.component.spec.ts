@@ -8,8 +8,7 @@ describe('AppShellComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
-      declarations: [AppShellComponent]
+      imports: [RouterTestingModule, AppShellComponent]
     }).compileComponents();
   });
 
