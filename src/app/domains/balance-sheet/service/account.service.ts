@@ -73,9 +73,7 @@ export class AccountService {
 
     if (!validationResult.isValid) {
       const error = `Validation failed: ${validationResult.errors.join(', ')}`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'AccountService.add',
         data: { errors: validationResult.errors }
       });
@@ -104,9 +102,7 @@ export class AccountService {
     this.accountState.setAccounts(accounts);
 
     // Log account creation
-    this.loggingService.add({
-      level: LogLevel.Information,
-      message: 'Account created',
+    this.loggingService.logInfo('Account created', {
       context: 'AccountService.add',
       data: {
         accountId: newAccount.id,
@@ -129,9 +125,7 @@ export class AccountService {
 
     if (targetIndex === -1) {
       const error = `Cannot update: Account ID ${id} does not exist`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'AccountService.update',
         data: { accountId: id, updates }
       });
@@ -152,9 +146,7 @@ export class AccountService {
     const validationResult = validateAccount(mergedAccount);
     if (!validationResult.isValid) {
       const error = `Validation failed: ${validationResult.errors.join(', ')}`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'AccountService.update',
         data: { accountId: id, errors: validationResult.errors }
       });
@@ -183,9 +175,7 @@ export class AccountService {
     this.accountState.setAccounts(updatedAccounts);
 
     // Log account update operation
-    this.loggingService.add({
-      level: LogLevel.Information,
-      message: 'Account updated',
+    this.loggingService.logInfo('Account updated', {
       context: 'AccountService.update',
       data: { accountId: id, accountName: updatedAccount.name, updates }
     });
@@ -200,9 +190,7 @@ export class AccountService {
 
     if (targetIndex === -1) {
       // Log error when account not found
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: 'Attempted to soft delete non-existent account',
+      this.loggingService.logError('Attempted to soft delete non-existent account', {
         context: 'AccountService.softDelete',
         data: { accountId: id }
       });
@@ -231,9 +219,7 @@ export class AccountService {
     this.accountState.setAccounts(updatedAccounts);
 
     // Log soft delete operation
-    this.loggingService.add({
-      level: LogLevel.Warning,
-      message: 'Account soft deleted',
+    this.loggingService.logWarn('Account soft deleted', {
       context: 'AccountService.softDelete',
       data: { accountId: id, accountName: currentAccount.name }
     });
@@ -258,9 +244,7 @@ export class AccountService {
 
     if (!accountToDelete) {
       const error = `Cannot delete: Account ID ${id} does not exist`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'AccountService.delete',
         data: { accountId: id }
       });
@@ -270,9 +254,7 @@ export class AccountService {
     // Check if account has balances
     const balanceCount = this.getBalanceCount(id);
     if (balanceCount > 0) {
-      this.loggingService.add({
-        level: LogLevel.Warning,
-        message: 'Cannot delete account with balances',
+      this.loggingService.logWarn('Cannot delete account with balances', {
         context: 'AccountService.delete',
         data: {
           accountId: id,
@@ -289,9 +271,7 @@ export class AccountService {
     this.accountState.setAccounts(filteredAccounts);
 
     // Log permanent deletion
-    this.loggingService.add({
-      level: LogLevel.Warning,
-      message: 'Account permanently deleted',
+    this.loggingService.logWarn('Account permanently deleted', {
       context: 'AccountService.delete',
       data: { accountId: id, accountName: accountToDelete.name }
     });

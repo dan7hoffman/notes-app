@@ -98,9 +98,7 @@ export class TaskService {
     this.taskState.setTasks(tasks);
 
         // Log task CREATE operation
-    this.loggingService.add({
-      level: LogLevel.Information,
-      message: 'Tasks created',
+    this.loggingService.logInfo('Tasks created', {
       context: 'TaskService.add',
       data: { newTask }
     });
@@ -119,9 +117,7 @@ export class TaskService {
 
     if (targetIndex === -1) {
       // Log error when task not found
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: 'Attempted to update non-existent task',
+      this.loggingService.logError('Attempted to update non-existent task', {
         context: 'TaskService.update',
         data: { taskId: id, updates }
       });
@@ -159,9 +155,7 @@ export class TaskService {
     this.taskState.setTasks(updatedTasks);
 
     // Log task update operation (only the changes)
-    this.loggingService.add({
-      level: LogLevel.Information,
-      message: 'Task updated',
+    this.loggingService.logInfo('Task updated', {
       context: 'TaskService.update',
       data: { taskId: id, updates }
     });
@@ -178,9 +172,7 @@ export class TaskService {
 
     if (targetIndex === -1) {
       // Log error when task not found
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: 'Attempted to soft delete non-existent task',
+      this.loggingService.logError('Attempted to soft delete non-existent task', {
         context: 'TaskService.softDelete',
         data: { taskId: id }
       });
@@ -216,9 +208,7 @@ export class TaskService {
     this.taskState.setTasks(updatedTasks);
 
     // Log soft delete operation
-    this.loggingService.add({
-      level: LogLevel.Warning,
-      message: 'Task soft deleted',
+    this.loggingService.logWarn('Task soft deleted', {
       context: 'TaskService.softDelete',
       data: { taskId: id, taskTitle: currentTask.title }
     });
@@ -239,9 +229,7 @@ export class TaskService {
 
     // Log permanent deletion
     if (taskToDelete) {
-      this.loggingService.add({
-        level: LogLevel.Warning,
-        message: 'Task permanently deleted',
+      this.loggingService.logWarn('Task permanently deleted', {
         context: 'TaskService.delete',
         data: { taskId: id, taskTitle: taskToDelete.title }
       });

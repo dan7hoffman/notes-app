@@ -1,7 +1,9 @@
 <div class="logging-container">
   <div class="header-row">
-    <h2>System Logs</h2>
-    <p>This logs actions across other Domains</p>
+    <div class="header-text">
+      <h2>System Logs</h2>
+      <p>Actions from other domains are logged here (max {{ maxLogRetention }} logs retained)</p>
+    </div>
 
     <div class="header-actions">
       <button
@@ -15,34 +17,83 @@
     </div>
   </div>
 
-  <!-- Search + Level Filter -->
+  <!-- Search + Level Filter Tabs -->
   <div class="search-controls">
-    <input
-      #searchInputElement
-      type="text"
-      placeholder="Search logs..."
-      (input)="onSearchChange(searchInputElement.value)"
-    />
-
-    <select
-      #levelSelect
-      [value]="selectedLevel()"
-      (change)="onLevelChange(levelSelect.value)"
-    >
-      <option value="all">All Levels</option>
-      <option value="info">Info</option>
-      <option value="warn">Warning</option>
-      <option value="error">Error</option>
-    </select>
+    <div class="search-input-wrapper">
+      <span class="material-icons search-icon">search</span>
+      <input
+        #searchInputElement
+        type="text"
+        placeholder="Search logs..."
+        [value]="searchInput()"
+        (input)="onSearchChange(searchInputElement.value)"
+      />
+      @if (searchText()) {
+        <button class="clear-search-btn" (click)="clearSearch()" title="Clear search">
+          <span class="material-icons">close</span>
+        </button>
+      }
+    </div>
   </div>
 
-  <!-- No logs message -->
+  <!-- Level Filter Tabs with Counts (context-aware: shows counts of filtered results) -->
+  <div class="level-tabs">
+    <button
+      class="level-tab"
+      [class.active]="selectedLevel() === 'all'"
+      [disabled]="filteredLogCounts().all === 0"
+      (click)="onLevelChange('all')"
+    >
+      All ({{ filteredLogCounts().all }})
+    </button>
+    <button
+      class="level-tab tab-info"
+      [class.active]="selectedLevel() === 'info'"
+      [disabled]="filteredLogCounts().info === 0"
+      (click)="onLevelChange('info')"
+    >
+      <span class="material-icons">info</span>
+      Info ({{ filteredLogCounts().info }})
+    </button>
+    <button
+      class="level-tab tab-warn"
+      [class.active]="selectedLevel() === 'warn'"
+      [disabled]="filteredLogCounts().warn === 0"
+      (click)="onLevelChange('warn')"
+    >
+      <span class="material-icons">warning</span>
+      Warn ({{ filteredLogCounts().warn }})
+    </button>
+    <button
+      class="level-tab tab-error"
+      [class.active]="selectedLevel() === 'error'"
+      [disabled]="filteredLogCounts().error === 0"
+      (click)="onLevelChange('error')"
+    >
+      <span class="material-icons">error</span>
+      Error ({{ filteredLogCounts().error }})
+    </button>
+  </div>
+
+  <!-- Empty state -->
   @if (filteredLogs().length === 0) {
-    <p class="no-logs">No logs available</p>
+    <div class="empty-state">
+      <span class="material-icons empty-icon">description</span>
+      @if (searchText()) {
+        <p class="empty-message">No logs match your search</p>
+        <small class="empty-hint">Try a different search term or clear the search</small>
+      } @else if (selectedLevel() !== 'all') {
+        <p class="empty-message">No {{ selectedLevel() }} logs found</p>
+        <small class="empty-hint">Try selecting a different level or "All"</small>
+      } @else {
+        <p class="empty-message">No logs yet</p>
+        <small class="empty-hint">Actions from other domains will appear here</small>
+      }
+    </div>
   } @else {
     <!-- Logs list -->
     <div class="logs-list">
-      @for (log of paginatedLogs(); track log.id) {
+      @for (log of paginatedLogs(); track trackByLogId($index, log)) {
         <div class="log-entry" [class]="'log-' + log.level">
           <div class="log-header">
             <span class="log-level">
@@ -51,7 +102,9 @@
               </span>
               {{ log.level.toUpperCase() }}
             </span>
-            <span class="log-timestamp">{{ formatAbsoluteDateTime(log.timeStamp) }}</span>
+            <span class="log-timestamp" [title]="formatAbsoluteDateTime(log.timeStamp)">
+              {{ formatRelativeTime(log.timeStamp) }}
+            </span>
           </div>
 
           <div class="log-message">{{ log.message }}</div>
@@ -66,7 +119,11 @@
                 <span class="material-icons">
                   {{ isExpanded(log.id) ? 'expand_less' : 'expand_more' }}
                 </span>
-                {{ isExpanded(log.id) ? 'Collapse' : 'Expand' }} Data
+                @if (isExpanded(log.id)) {
+                  Collapse
+                } @else {
+                  {{ getDataPreview(log.data) }}
+                }
               </button>
             }
             <button class="delete-btn" (click)="deleteLog(log.id)" title="Delete log">
@@ -75,8 +132,8 @@
             </button>
           </div>
 
-          @if (log.data && isExpanded(log.id)) {
-            <div class="log-data">
+          @if (log.data) {
+            <div class="log-data" [class.expanded]="isExpanded(log.id)">
               <pre>{{ log.data | json }}</pre>
             </div>
           }

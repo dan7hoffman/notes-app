@@ -23,3 +23,9 @@ export const MAX_LOG_DATA_SIZE = 10_000;
  * Warning threshold for localStorage usage (4MB out of ~5MB quota)
  */
 export const STORAGE_QUOTA_WARNING_BYTES = 4_000_000;
+
+/**
+ * Maximum number of logs to retain in storage
+ * Oldest logs are pruned when this limit is exceeded
+ */
+export const MAX_LOG_RETENTION = 1000;

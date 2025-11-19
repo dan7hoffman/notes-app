@@ -2,9 +2,9 @@ import { CommonModule } from "@angular/common";
 import { Component, computed, effect, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { LoggingService } from "../../service/logging.service";
-import { formatAbsoluteDateTime } from "../../../../shared/utils/date-formatter.util";
+import { formatAbsoluteDateTime, formatRelativeTime } from "../../../../shared/utils/date-formatter.util";
 import { LogLevel } from "../../logging.model";
-import { DEFAULT_PAGE_SIZE } from "../../logging.constants";
+import { DEFAULT_PAGE_SIZE, MAX_LOG_RETENTION } from "../../logging.constants";
 
 @Component({
     selector: 'app-logging-list',
@@ -18,7 +18,7 @@ export class LoggingListComponent {
     logs = this.loggingService.logs;
 
     // Search state (component-local)
-    private searchInput = signal(''); // Raw input from user
+    searchInput = signal(''); // Raw input from user (public for template binding)
     searchText = signal(''); // Debounced search text
     selectedLevel = signal<'all' | LogLevel>('all');
     private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -37,6 +37,12 @@ export class LoggingListComponent {
             // Reset to first page when search changes
             this.currentPage.set(0);
         }, 300); // 300ms debounce
+    }
+
+    clearSearch(): void {
+        this.searchInput.set('');
+        this.searchText.set('');
+        this.currentPage.set(0);
     }
 
     onLevelChange(level: string): void {
@@ -127,27 +133,62 @@ export class LoggingListComponent {
      * - Success confirmation when result isn't visually obvious
      */
 
-    // Computed filtered logs
-    filteredLogs = computed(() => {
+    // Computed logs filtered by search only (for tab counts)
+    // This shows distribution of search results across levels
+    private searchFilteredLogs = computed(() => {
         const logs = this.logs();
         const search = this.searchText().toLowerCase();
-        const level = this.selectedLevel();
+
+        if (!search) return logs;
 
         return logs.filter(log => {
-            // Filter by level
-            if (level !== 'all' && log.level !== level) return false;
-
-            // Filter by search
             const searchable = [
                 log.message,
                 log.context ?? '',
                 JSON.stringify(log.data ?? '')
             ].join(' ').toLowerCase();
 
-            if (!searchable.includes(search)) return false;
-
-            return true;
+            return searchable.includes(search);
         });
+    });
+
+    // Computed filtered logs (search + level filter for display)
+    filteredLogs = computed(() => {
+        const logs = this.searchFilteredLogs();
+        const level = this.selectedLevel();
+
+        if (level === 'all') return logs;
+
+        return logs.filter(log => log.level === level);
+    });
+
+    // Computed counts from search-filtered logs only (not affected by level selection)
+    // This shows: "Of your search results, how many in each level?"
+    filteredLogCounts = computed(() => {
+        const filtered = this.searchFilteredLogs();
+        const counts = {
+            all: filtered.length,
+            info: 0,
+            warn: 0,
+            error: 0
+        };
+
+        // Single pass through search-filtered results
+        for (const log of filtered) {
+            switch (log.level) {
+                case LogLevel.Information:
+                    counts.info++;
+                    break;
+                case LogLevel.Warning:
+                    counts.warn++;
+                    break;
+                case LogLevel.Error:
+                    counts.error++;
+                    break;
+            }
+        }
+
+        return counts;
     });
 
     // Computed paginated logs
@@ -192,8 +233,32 @@ export class LoggingListComponent {
         }
     }
 
-    // Expose formatter for template use
+    // Expose formatters for template use
     formatAbsoluteDateTime = formatAbsoluteDateTime;
+    formatRelativeTime = formatRelativeTime;
+
+    // Expose constant for template
+    maxLogRetention = MAX_LOG_RETENTION;
+
+    /**
+     * Get a preview hint for log data (Object, Array, string, etc.)
+     */
+    getDataPreview(data: any): string {
+        if (data === null || data === undefined) {
+            return '';
+        }
+        if (Array.isArray(data)) {
+            return `[${data.length} items]`;
+        }
+        if (typeof data === 'object') {
+            const keys = Object.keys(data);
+            return `{${keys.length} ${keys.length === 1 ? 'field' : 'fields'}}`;
+        }
+        if (typeof data === 'string') {
+            return data.length > 20 ? `"${data.substring(0, 20)}..."` : `"${data}"`;
+        }
+        return String(data);
+    }
 
     // Map log levels to Material Icon names
     logLevelIcons: Record<LogLevel, string> = {
@@ -215,6 +280,11 @@ export class LoggingListComponent {
 
     isExpanded(logId: number): boolean {
         return this.expandedLogs.has(logId);
+    }
+
+    // TrackBy function for performance optimization
+    trackByLogId(index: number, log: any): number {
+        return log.id;
     }
 
     /**

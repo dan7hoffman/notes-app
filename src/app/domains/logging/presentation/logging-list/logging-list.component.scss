@@ -9,9 +9,17 @@
     align-items: center;
     margin-bottom: 1rem;
 
-    h2 {
-      margin: 0;
-      color: #333;
+    .header-text {
+      h2 {
+        margin: 0;
+        color: #333;
+      }
+
+      p {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.85rem;
+        color: #666;
+      }
     }
 
     .header-actions {
@@ -55,39 +63,151 @@
     background-color: #f5f5f5;
     border-radius: 4px;
 
-    input {
+    .search-input-wrapper {
       flex: 1;
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
+      position: relative;
+      display: flex;
+      align-items: center;
 
-      &:focus {
-        outline: none;
-        border-color: #2196F3;
+      .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        color: #666;
+        font-size: 1.2rem;
+        pointer-events: none;
       }
-    }
 
-    select {
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-      background-color: white;
-      cursor: pointer;
+      input {
+        flex: 1;
+        padding: 0.5rem 2.5rem 0.5rem 2.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
 
-      &:focus {
-        outline: none;
-        border-color: #2196F3;
+        &:focus {
+          outline: none;
+          border-color: #2196F3;
+        }
+      }
+
+      .clear-search-btn {
+        position: absolute;
+        right: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem;
+        background: none;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        color: #666;
+        transition: background-color 0.2s, color 0.2s;
+
+        .material-icons {
+          font-size: 1.2rem;
+        }
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: #333;
+        }
       }
     }
   }
 
-  .no-logs {
+  .level-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+
+    .level-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      background-color: white;
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      .material-icons {
+        font-size: 1.1rem;
+      }
+
+      &:hover:not(.active) {
+        background-color: #fafafa;
+        border-color: #ddd;
+      }
+
+      &.active {
+        background-color: #2196F3;
+        color: white;
+        border-color: #2196F3;
+      }
+
+      // Tab-specific colors when active
+      &.tab-info.active {
+        background-color: #2196F3;
+        border-color: #2196F3;
+      }
+
+      &.tab-warn.active {
+        background-color: #FF9800;
+        border-color: #FF9800;
+      }
+
+      &.tab-error.active {
+        background-color: #F44336;
+        border-color: #F44336;
+      }
+
+      // Disabled state for tabs with 0 count
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #f5f5f5;
+        color: #999;
+
+        &:hover {
+          background-color: #f5f5f5;
+          border-color: transparent;
+        }
+      }
+    }
+  }
+
+  .empty-state {
     text-align: center;
+    padding: 4rem 2rem;
     color: #666;
-    padding: 2rem;
-    font-style: italic;
+
+    .empty-icon {
+      font-size: 4rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    .empty-message {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+      color: #666;
+    }
+
+    .empty-hint {
+      font-size: 0.9rem;
+      color: #999;
+      font-style: italic;
+    }
   }
 
   .logs-list {
@@ -199,8 +319,19 @@
     .log-data {
       background-color: #f5f5f5;
       border-radius: 3px;
-      padding: 0.5rem;
-      margin-top: 0.5rem;
+      padding: 0;
+      margin-top: 0;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease-out, padding 0.3s ease-out;
+
+      &.expanded {
+        max-height: 1000px;
+        opacity: 1;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+      }
 
       pre {
         margin: 0;
@@ -211,17 +342,32 @@
       }
     }
 
-    // Add color to the icons based on log level
-    &.log-info .log-icon {
-      color: #2196F3; /* Blue */
+    // Add color to the icons and level text based on log level
+    &.log-info {
+      .log-icon {
+        color: #2196F3; /* Blue */
+      }
+      .log-level {
+        color: #2196F3;
+      }
     }
 
-    &.log-warn .log-icon {
-      color: #FF9800; /* Orange */
+    &.log-warn {
+      .log-icon {
+        color: #FF9800; /* Orange */
+      }
+      .log-level {
+        color: #FF9800;
+      }
     }
 
-    &.log-error .log-icon {
-      color: #F44336; /* Red */
+    &.log-error {
+      .log-icon {
+        color: #F44336; /* Red */
+      }
+      .log-level {
+        color: #F44336;
+      }
     }
   }
 

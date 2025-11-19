@@ -57,9 +57,7 @@ export class BalanceService {
     const account = this.accountState.getAccountById(data.accountId);
     if (!account) {
       const error = `Cannot create balance: Account ID ${data.accountId} does not exist`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.add',
         data: { accountId: data.accountId }
       });
@@ -68,9 +66,7 @@ export class BalanceService {
 
     if (account.deleted) {
       const error = `Cannot create balance: Account "${account.name}" is deleted`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.add',
         data: { accountId: data.accountId, accountName: account.name }
       });
@@ -89,9 +85,7 @@ export class BalanceService {
 
     if (!validationResult.isValid) {
       const error = `Validation failed: ${validationResult.errors.join(', ')}`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.add',
         data: { accountId: data.accountId, errors: validationResult.errors }
       });
@@ -102,9 +96,7 @@ export class BalanceService {
     const existingBalances = this.repo.getAll();
     if (isDuplicateBalance(data.accountId, data.date, existingBalances)) {
       const error = `Balance already exists for account "${account.name}" on this date`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.add',
         data: {
           accountId: data.accountId,
@@ -135,9 +127,7 @@ export class BalanceService {
     this.balanceState.setBalances(balances);
 
     // 6. LOG SUCCESS
-    this.loggingService.add({
-      level: LogLevel.Information,
-      message: 'Balance entry created',
+    this.loggingService.logInfo('Balance entry created', {
       context: 'BalanceService.add',
       data: {
         balanceId: newBalance.id,
@@ -161,9 +151,7 @@ export class BalanceService {
 
     if (targetIndex === -1) {
       const error = `Cannot update: Balance ID ${id} does not exist`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.update',
         data: { balanceId: id, updates }
       });
@@ -176,9 +164,7 @@ export class BalanceService {
     const account = this.accountState.getAccountById(currentBalance.accountId);
     if (!account) {
       const error = `Cannot update balance: Associated account no longer exists`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.update',
         data: { balanceId: id, accountId: currentBalance.accountId }
       });
@@ -196,9 +182,7 @@ export class BalanceService {
     const validationResult = validateBalance(mergedBalance, account.type);
     if (!validationResult.isValid) {
       const error = `Validation failed: ${validationResult.errors.join(', ')}`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.update',
         data: { balanceId: id, errors: validationResult.errors }
       });
@@ -208,9 +192,7 @@ export class BalanceService {
     // Check for duplicates if date is being updated (exclude current balance from check)
     if (updates.date && isDuplicateBalance(currentBalance.accountId, updates.date, currentBalances, id)) {
       const error = `Balance already exists for account "${account.name}" on this date`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.update',
         data: {
           balanceId: id,
@@ -242,9 +224,7 @@ export class BalanceService {
     this.balanceState.setBalances(updatedBalances);
 
     // Log balance update operation
-    this.loggingService.add({
-      level: LogLevel.Information,
-      message: 'Balance entry updated',
+    this.loggingService.logInfo('Balance entry updated', {
       context: 'BalanceService.update',
       data: {
         balanceId: id,
@@ -264,9 +244,7 @@ export class BalanceService {
 
     if (!balanceToDelete) {
       const error = `Cannot delete: Balance ID ${id} does not exist`;
-      this.loggingService.add({
-        level: LogLevel.Error,
-        message: error,
+      this.loggingService.logError(error, {
         context: 'BalanceService.delete',
         data: { balanceId: id }
       });
@@ -283,9 +261,7 @@ export class BalanceService {
     this.balanceState.setBalances(filteredBalances);
 
     // Log permanent deletion
-    this.loggingService.add({
-      level: LogLevel.Warning,
-      message: 'Balance entry permanently deleted',
+    this.loggingService.logWarn('Balance entry permanently deleted', {
       context: 'BalanceService.delete',
       data: {
         balanceId: id,
@@ -311,9 +287,7 @@ export class BalanceService {
 
     // Log bulk deletion
     if (balancesToDelete.length > 0) {
-      this.loggingService.add({
-        level: LogLevel.Warning,
-        message: 'All balance entries deleted for account',
+      this.loggingService.logWarn('All balance entries deleted for account', {
         context: 'BalanceService.deleteByAccount',
         data: {
           accountId,

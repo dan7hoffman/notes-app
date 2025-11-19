@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { LoggingRepository } from "../data/logging.repository";
 import { Log, LogLevel } from "../logging.model";
 import { LogStateService } from "./loggingState.service";
+import { MAX_LOG_RETENTION } from "../logging.constants";
 
 export type NewLogData = Omit<Log, 'id' | 'timeStamp'>;
 
@@ -54,8 +55,17 @@ export class LoggingService {
     data: data.data,
     timeStamp: now,
         };
-        // Order matters
-        const logs = [...existingLogs,newLog];
+        // Order matters - add new log
+        let logs = [...existingLogs, newLog];
+
+        // Enforce max retention - remove oldest logs if over limit
+        if (logs.length > MAX_LOG_RETENTION) {
+            // Sort by timestamp ascending (oldest first), then take only the newest
+            logs = logs
+                .sort((a, b) => a.timeStamp.getTime() - b.timeStamp.getTime())
+                .slice(logs.length - MAX_LOG_RETENTION);
+        }
+
         // Persist first
         const saved = this.repo.saveAll(logs);
         // Then update signal
@@ -64,6 +74,51 @@ export class LoggingService {
             console.warn('[LoggingService] Log added to memory but failed to persist to storage');
         }
         return newLog;
+    }
+
+    /**
+     * Convenience method: Log an informational message
+     * @param message - The log message
+     * @param options - Optional context and data
+     * @returns The created log entry
+     */
+    logInfo(message: string, options?: { context?: string; data?: any }): Log {
+        return this.add({
+            level: LogLevel.Information,
+            message,
+            context: options?.context,
+            data: options?.data
+        });
+    }
+
+    /**
+     * Convenience method: Log a warning message
+     * @param message - The log message
+     * @param options - Optional context and data
+     * @returns The created log entry
+     */
+    logWarn(message: string, options?: { context?: string; data?: any }): Log {
+        return this.add({
+            level: LogLevel.Warning,
+            message,
+            context: options?.context,
+            data: options?.data
+        });
+    }
+
+    /**
+     * Convenience method: Log an error message
+     * @param message - The log message
+     * @param options - Optional context and data
+     * @returns The created log entry
+     */
+    logError(message: string, options?: { context?: string; data?: any }): Log {
+        return this.add({
+            level: LogLevel.Error,
+            message,
+            context: options?.context,
+            data: options?.data
+        });
     }
 
     /**

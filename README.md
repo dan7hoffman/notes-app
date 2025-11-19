@@ -142,7 +142,46 @@ src/app/shared/utils/
 
 ## ⚡ Recent Architectural Improvements
 
-### **Logging Domain P0 Enhancements (Latest)**
+### **Logging Domain P1 Enhancements (Latest)**
+
+The logging domain received comprehensive UI/UX polish and architectural improvements:
+
+**1. Tab-Based Level Filter with Counts**
+- Visual tabs replace dropdown: `All (11) | Info (9) | Warn (2)`
+- Context-aware counts based on search results only (not affected by level selection)
+- Disabled tabs when count is 0 for better affordance
+- Color-coded tabs matching log levels (blue/orange/red)
+
+**2. Convenience Logging API**
+- New methods: `logInfo()`, `logWarn()`, `logError()`
+- Cleaner call sites: `this.loggingService.logInfo('Task created', { context, data })`
+- No need to import `LogLevel` enum in other domains
+- All Task and Balance Sheet domains updated to use new API
+
+**3. Production-Ready Features**
+- Max log retention (1000 logs) with automatic pruning of oldest
+- Relative timestamps ("Just now", "2 minutes ago") with absolute tooltip on hover
+- Data expansion preview hints (`{3 fields}`, `[5 items]`)
+- Search icon + clear button for better affordance
+- Contextual empty states with icons and helpful messages
+
+**4. Performance Optimizations**
+- TrackBy function for efficient list rendering
+- Single-pass counting algorithm for log level distribution
+- Proper computed signal chain: `logs → searchFilteredLogs → filteredLogs → paginatedLogs`
+
+**5. Smooth Animations**
+- CSS transitions for expand/collapse (0.3s ease-out)
+- Animates: max-height, opacity, margin, padding
+
+**6. Architectural Clarity**
+- Counts computed from search-filtered logs (presentation logic stays in component)
+- Level filter is view-only selection, doesn't affect tab counts
+- Clear separation: domain layer owns raw state, presentation owns filtered views
+
+---
+
+### **Logging Domain P0 Enhancements**
 
 The logging domain received critical production-ready upgrades:
 
@@ -240,14 +279,22 @@ history: [{
 ```
 
 ### **3. System Logging**
-Production-ready logging with complete CRUD:
+Production-ready logging with convenience API:
 ```typescript
-// Automatic logging on CRUD operations
-this.loggingService.add({
-  level: LogLevel.Information,
-  message: 'Task updated',
+// Clean logging with convenience methods
+this.loggingService.logInfo('Task updated', {
   context: 'TaskService.update',
   data: { taskId: 123, updates: { status: 'completed' } }
+});
+
+this.loggingService.logWarn('Account balance low', {
+  context: 'BalanceService.check',
+  data: { accountId: 456, balance: 100 }
+});
+
+this.loggingService.logError('Validation failed', {
+  context: 'AccountService.add',
+  data: { errors: ['Name required'] }
 })
 ```
 - **Info logs**: Task creation, updates

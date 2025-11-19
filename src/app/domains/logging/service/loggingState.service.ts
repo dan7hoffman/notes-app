@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from "@angular/core";
-import { Log } from "../logging.model";
+import { Log, LogLevel } from "../logging.model";
 
 @Injectable({
     providedIn: 'root',
