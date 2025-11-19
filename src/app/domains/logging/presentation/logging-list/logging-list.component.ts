@@ -49,6 +49,30 @@ export class LoggingListComponent {
     pageSize = signal(DEFAULT_PAGE_SIZE);
     currentPage = signal(0);
 
+    /**
+     * NOTE: Loading states for async operations (HTTP backend)
+     *
+     * When migrating from localStorage to HTTP backend, add component-local loading states:
+     *
+     * private deletingIds = signal<Set<number>>(new Set());
+     * isClearing = signal(false);
+     *
+     * isDeletingLog(id: number): boolean {
+     *     return this.deletingIds().has(id);
+     * }
+     *
+     * Then update deleteLog() and clearAllLogs() to:
+     * 1. Set loading state before operation
+     * 2. Perform async operation
+     * 3. Clear loading state after operation
+     *
+     * Update template to show spinners:
+     * @if (isDeletingLog(log.id)) { <span class="spinner"></span> }
+     * @if (isClearing()) { <span class="spinner"></span> }
+     *
+     * See commit history for full implementation example.
+     */
+
     // Computed filtered logs
     filteredLogs = computed(() => {
         const logs = this.logs();
