@@ -73,6 +73,60 @@ export class LoggingListComponent {
      * See commit history for full implementation example.
      */
 
+    /**
+     * NOTE: Toast notifications for async operations
+     *
+     * Toast notifications are NOT needed for synchronous localStorage operations
+     * because signal reactivity provides immediate visual feedback (logs disappear).
+     *
+     * When migrating to HTTP backend, add toast service for user feedback:
+     *
+     * // Install @angular/material/snack-bar or create custom toast service
+     * private toastService = inject(ToastService);
+     *
+     * async deleteLog(id: number) {
+     *     if (!confirm('Delete this log?')) return;
+     *
+     *     this.deletingIds.update(ids => new Set(ids).add(id));
+     *
+     *     try {
+     *         await this.loggingService.delete(id);
+     *         this.toastService.success('Log deleted successfully');
+     *         this.expandedLogs.delete(id);
+     *     } catch (error) {
+     *         this.toastService.error('Failed to delete log: ' + error.message);
+     *     } finally {
+     *         this.deletingIds.update(ids => {
+     *             const newIds = new Set(ids);
+     *             newIds.delete(id);
+     *             return newIds;
+     *         });
+     *     }
+     * }
+     *
+     * async clearAllLogs() {
+     *     if (!confirm('Clear all logs?')) return;
+     *
+     *     this.isClearing.set(true);
+     *
+     *     try {
+     *         const count = this.filteredLogs().length;
+     *         await this.loggingService.clear();
+     *         this.toastService.success(`${count} logs cleared`);
+     *         this.expandedLogs.clear();
+     *     } catch (error) {
+     *         this.toastService.error('Failed to clear logs: ' + error.message);
+     *     } finally {
+     *         this.isClearing.set(false);
+     *     }
+     * }
+     *
+     * Toasts provide value for:
+     * - Async operations (user can't see immediate result)
+     * - Error feedback (operation fails, user needs to know why)
+     * - Success confirmation when result isn't visually obvious
+     */
+
     // Computed filtered logs
     filteredLogs = computed(() => {
         const logs = this.logs();
