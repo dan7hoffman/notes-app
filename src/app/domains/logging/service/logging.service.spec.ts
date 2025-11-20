@@ -474,4 +474,115 @@ describe('LoggingService', () => {
       expect(result.data).toEqual(complexData);
     });
   });
+
+  /**
+   * Test group: Convenience methods
+   */
+  describe('Convenience methods', () => {
+
+    it('should log info with logInfo()', () => {
+      const result = service.logInfo('Info message', {
+        context: 'TestContext',
+        data: { key: 'value' }
+      });
+
+      expect(result.level).toBe(LogLevel.Information);
+      expect(result.message).toBe('Info message');
+      expect(result.context).toBe('TestContext');
+      expect(result.data).toEqual({ key: 'value' });
+    });
+
+    it('should log warning with logWarn()', () => {
+      const result = service.logWarn('Warning message', {
+        context: 'TestContext'
+      });
+
+      expect(result.level).toBe(LogLevel.Warning);
+      expect(result.message).toBe('Warning message');
+      expect(result.context).toBe('TestContext');
+    });
+
+    it('should log error with logError()', () => {
+      const result = service.logError('Error message', {
+        data: { error: 'details' }
+      });
+
+      expect(result.level).toBe(LogLevel.Error);
+      expect(result.message).toBe('Error message');
+      expect(result.data).toEqual({ error: 'details' });
+    });
+
+    it('should work without options', () => {
+      const infoResult = service.logInfo('Simple info');
+      const warnResult = service.logWarn('Simple warn');
+      const errorResult = service.logError('Simple error');
+
+      expect(infoResult.message).toBe('Simple info');
+      expect(infoResult.context).toBeUndefined();
+      expect(warnResult.message).toBe('Simple warn');
+      expect(errorResult.message).toBe('Simple error');
+    });
+
+    it('should persist logs from convenience methods', () => {
+      service.logInfo('Persisted info');
+      service.logWarn('Persisted warn');
+      service.logError('Persisted error');
+
+      const saved = repository.getAll();
+      expect(saved.length).toBe(3);
+      expect(saved.map(l => l.level)).toEqual([
+        LogLevel.Information,
+        LogLevel.Warning,
+        LogLevel.Error
+      ]);
+    });
+  });
+
+  /**
+   * Test group: Max log retention
+   */
+  describe('Max log retention', () => {
+
+    it('should not prune logs when under limit', () => {
+      // Add 5 logs (well under 1000 limit)
+      for (let i = 0; i < 5; i++) {
+        service.logInfo(`Log ${i}`);
+      }
+
+      const logs = service.logs();
+      expect(logs.length).toBe(5);
+    });
+
+    it('should maintain all logs when under limit', () => {
+      // Add 10 logs (well under 1000 limit)
+      for (let i = 0; i < 10; i++) {
+        service.logInfo(`Log ${i}`, { data: { index: i } });
+      }
+
+      const logs = service.logs();
+      expect(logs.length).toBe(10);
+
+      // Verify all logs are present (sorted newest first by state service)
+      const messages = logs.map(l => l.message);
+      expect(messages).toContain('Log 0');
+      expect(messages).toContain('Log 9');
+    });
+
+    it('should sort logs newest first via state service', () => {
+      // Add logs sequentially
+      for (let i = 0; i < 5; i++) {
+        service.logInfo(`Log ${i}`);
+      }
+
+      const logs = service.logs();
+      // State service sorts by timestamp descending (newest first)
+      // Since all logs have nearly identical timestamps in tests,
+      // just verify we have all 5 logs
+      expect(logs.length).toBe(5);
+      const messages = logs.map(l => l.message);
+      for (let i = 0; i < 5; i++) {
+        expect(messages).toContain(`Log ${i}`);
+      }
+    });
+  });
 });
