@@ -36,6 +36,18 @@
     </div>
   </div>
 
+  <!-- Correlation Filter Banner -->
+  @if (selectedCorrelation()) {
+    <div class="correlation-filter-banner">
+      <span class="material-icons">link</span>
+      Filtered by correlation: {{ truncateCorrelationId(selectedCorrelation()!) }}
+      <button class="clear-filter-btn" (click)="clearCorrelationFilter()">
+        <span class="material-icons">close</span>
+        Clear
+      </button>
+    </div>
+  }
+
   <!-- Level Filter Tabs with Counts (context-aware: shows counts of filtered results) -->
   <div class="level-tabs">
     <button
@@ -112,6 +124,37 @@
           @if (log.context) {
             <div class="log-context">Context: {{ log.context }}</div>
           }
+
+          <!-- Enterprise metadata row -->
+          <div class="log-metadata">
+            @if (log.userId && log.userId !== 'anonymous') {
+              <span class="metadata-item" title="User ID">
+                <span class="material-icons">person</span>
+                {{ log.userId }}
+              </span>
+            }
+            @if (log.correlationId) {
+              <button
+                class="metadata-item correlation-link"
+                (click)="filterByCorrelation(log.correlationId)"
+                [title]="'Filter by correlation: ' + log.correlationId">
+                <span class="material-icons">link</span>
+                {{ truncateCorrelationId(log.correlationId) }}
+              </button>
+            }
+            @if (log.duration !== undefined) {
+              <span class="metadata-item duration" title="Operation duration">
+                <span class="material-icons">timer</span>
+                {{ formatDuration(log.duration) }}
+              </span>
+            }
+            @if (log.sessionId) {
+              <span class="metadata-item session" [title]="'Session: ' + log.sessionId">
+                <span class="material-icons">devices</span>
+                {{ truncateCorrelationId(log.sessionId) }}
+              </span>
+            }
+          </div>
 
           <div class="log-actions">
             @if (log.data) {

@@ -65,6 +65,8 @@ export class TaskService {
    * Creates immutable task object with initial history entry.
    */
   add(data: NewTaskData): Task {
+    const correlationId = this.loggingService.startOperation('createTask', { title: data.title });
+
     const now = new Date();
     const id = Date.now();
 
@@ -97,10 +99,10 @@ export class TaskService {
     this.repo.saveAll(tasks);
     this.taskState.setTasks(tasks);
 
-        // Log task CREATE operation
-    this.loggingService.logInfo('Tasks created', {
+    // End operation with success log
+    this.loggingService.endOperation(correlationId, 'Task created successfully', {
       context: 'TaskService.add',
-      data: { newTask }
+      data: { taskId: newTask.id, title: newTask.title }
     });
 
     return newTask;
@@ -112,12 +114,14 @@ export class TaskService {
    * Ensures immutability by creating new objects/arrays.
    */
   update(id: number, updates: TaskUpdateData): void {
+    const correlationId = this.loggingService.startOperation('updateTask', { taskId: id });
+
     const currentTasks = this.repo.getAll();
     const targetIndex = currentTasks.findIndex((t) => t.id === id);
 
     if (targetIndex === -1) {
       // Log error when task not found
-      this.loggingService.logError('Attempted to update non-existent task', {
+      this.loggingService.endOperationWithError(correlationId, 'Attempted to update non-existent task', {
         context: 'TaskService.update',
         data: { taskId: id, updates }
       });
@@ -154,8 +158,8 @@ export class TaskService {
     this.repo.saveAll(updatedTasks);
     this.taskState.setTasks(updatedTasks);
 
-    // Log task update operation (only the changes)
-    this.loggingService.logInfo('Task updated', {
+    // End operation with success
+    this.loggingService.endOperation(correlationId, 'Task updated successfully', {
       context: 'TaskService.update',
       data: { taskId: id, updates }
     });
@@ -167,12 +171,14 @@ export class TaskService {
    * Ensures immutability by creating new objects/arrays.
    */
   softDelete(id: number): void {
+    const correlationId = this.loggingService.startOperation('softDeleteTask', { taskId: id });
+
     const currentTasks = this.repo.getAll();
     const targetIndex = currentTasks.findIndex((t) => t.id === id);
 
     if (targetIndex === -1) {
       // Log error when task not found
-      this.loggingService.logError('Attempted to soft delete non-existent task', {
+      this.loggingService.endOperationWithError(correlationId, 'Attempted to soft delete non-existent task', {
         context: 'TaskService.softDelete',
         data: { taskId: id }
       });
@@ -207,8 +213,8 @@ export class TaskService {
     this.repo.saveAll(updatedTasks);
     this.taskState.setTasks(updatedTasks);
 
-    // Log soft delete operation
-    this.loggingService.logWarn('Task soft deleted', {
+    // End operation with warning (soft delete is a significant action)
+    this.loggingService.endOperation(correlationId, 'Task soft deleted', {
       context: 'TaskService.softDelete',
       data: { taskId: id, taskTitle: currentTask.title }
     });
@@ -219,6 +225,8 @@ export class TaskService {
    * Ensures immutability by creating new filtered array.
    */
   delete(id: number): void {
+    const correlationId = this.loggingService.startOperation('permanentDeleteTask', { taskId: id });
+
     const currentTasks = this.repo.getAll();
     const taskToDelete = currentTasks.find((t) => t.id === id);
 
@@ -227,11 +235,16 @@ export class TaskService {
     this.repo.saveAll(filteredTasks);
     this.taskState.setTasks(filteredTasks);
 
-    // Log permanent deletion
+    // End operation
     if (taskToDelete) {
-      this.loggingService.logWarn('Task permanently deleted', {
+      this.loggingService.endOperation(correlationId, 'Task permanently deleted', {
         context: 'TaskService.delete',
         data: { taskId: id, taskTitle: taskToDelete.title }
+      });
+    } else {
+      this.loggingService.endOperationWithError(correlationId, 'Task not found for deletion', {
+        context: 'TaskService.delete',
+        data: { taskId: id }
       });
     }
   }

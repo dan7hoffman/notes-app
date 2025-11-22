@@ -152,14 +152,23 @@ export class LoggingListComponent {
         });
     });
 
-    // Computed filtered logs (search + level filter for display)
+    // Computed filtered logs (search + level + correlation filter for display)
     filteredLogs = computed(() => {
-        const logs = this.searchFilteredLogs();
+        let logs = this.searchFilteredLogs();
         const level = this.selectedLevel();
+        const correlation = this.selectedCorrelation();
 
-        if (level === 'all') return logs;
+        // Apply level filter
+        if (level !== 'all') {
+            logs = logs.filter(log => log.level === level);
+        }
 
-        return logs.filter(log => log.level === level);
+        // Apply correlation filter
+        if (correlation) {
+            logs = logs.filter(log => log.correlationId === correlation);
+        }
+
+        return logs;
     });
 
     // Computed counts from search-filtered logs only (not affected by level selection)
@@ -270,6 +279,9 @@ export class LoggingListComponent {
     // Track expansion state per log ID
     expandedLogs = new Set<number>();
 
+    // Correlation filter
+    selectedCorrelation = signal<string | null>(null);
+
     toggleExpand(logId: number): void {
         if (this.expandedLogs.has(logId)) {
             this.expandedLogs.delete(logId);
@@ -280,6 +292,40 @@ export class LoggingListComponent {
 
     isExpanded(logId: number): boolean {
         return this.expandedLogs.has(logId);
+    }
+
+    /**
+     * Filter logs by correlation ID
+     */
+    filterByCorrelation(correlationId: string): void {
+        this.selectedCorrelation.set(correlationId);
+        this.currentPage.set(0);
+    }
+
+    /**
+     * Clear correlation filter
+     */
+    clearCorrelationFilter(): void {
+        this.selectedCorrelation.set(null);
+        this.currentPage.set(0);
+    }
+
+    /**
+     * Format duration in ms to human readable
+     */
+    formatDuration(ms: number | undefined): string {
+        if (ms === undefined) return '';
+        if (ms < 1000) return `${Math.round(ms)}ms`;
+        return `${(ms / 1000).toFixed(2)}s`;
+    }
+
+    /**
+     * Truncate correlation ID for display
+     */
+    truncateCorrelationId(id: string | undefined): string {
+        if (!id) return '';
+        if (id.length <= 12) return id;
+        return id.substring(0, 12) + '...';
     }
 
     // TrackBy function for performance optimization
